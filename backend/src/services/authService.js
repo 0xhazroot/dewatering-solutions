@@ -2,7 +2,10 @@ import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import userModel from '../models/userModel.js';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'fallback_secret';
+const JWT_SECRET = process.env.JWT_SECRET;
+if (!JWT_SECRET) {
+  throw new Error('FATAL: La variable de entorno JWT_SECRET no está configurada.');
+}
 
 const loginAttempts = new Map();
 const MAX_LOGIN_ATTEMPTS = 5;
@@ -17,7 +20,7 @@ class AuthService {
     }
 
     // Validación de dominio corporativo para roles internos
-    const internalRoles = ['SUPER_ADMIN', 'ADMIN', 'COMMERCIAL', 'ENGINEER'];
+    const internalRoles = ['SUPER_ADMIN', 'OPERATOR'];
     const targetRole = role || 'CLIENT';
     if (internalRoles.includes(targetRole) && !email.toLowerCase().endsWith('@dewatering.com')) {
       throw new Error('Los usuarios internos deben usar correo @dewatering.com');

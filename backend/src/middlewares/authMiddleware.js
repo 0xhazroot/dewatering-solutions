@@ -2,7 +2,10 @@ import jwt from 'jsonwebtoken';
 import dotenv from 'dotenv';
 dotenv.config();
 
-const JWT_SECRET = process.env.JWT_SECRET || 'fallback_secret';
+const JWT_SECRET = process.env.JWT_SECRET;
+if (!JWT_SECRET) {
+  throw new Error('FATAL: La variable de entorno JWT_SECRET no está configurada.');
+}
 
 export const requireAuth = (req, res, next) => {
   // 1. Extraer el token de las cabeceras (Formato esperado: "Bearer <token>")
