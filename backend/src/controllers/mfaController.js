@@ -4,7 +4,10 @@ import userModel from '../models/userModel.js';
 import jwt from 'jsonwebtoken';
 import auditService from '../services/auditService.js';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'fallback_secret';
+const JWT_SECRET = process.env.JWT_SECRET;
+if (!JWT_SECRET) {
+  throw new Error('FATAL: La variable de entorno JWT_SECRET no está configurada.');
+}
 
 export const setupMfa = async (req, res, next) => {
   try {

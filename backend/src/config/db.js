@@ -5,6 +5,8 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 // Configuración del Pool de conexiones para maximizar rendimiento
+const isProduction = process.env.NODE_ENV === 'production';
+
 const pool = new Pool({
   host: process.env.DB_HOST,
   port: process.env.DB_PORT,
@@ -14,7 +16,7 @@ const pool = new Pool({
   max: 20, // Máximo de clientes en el pool
   idleTimeoutMillis: 30000,
   connectionTimeoutMillis: 10000,
-  ssl: { rejectUnauthorized: false },
+  ssl: isProduction ? { rejectUnauthorized: true } : { rejectUnauthorized: false },
 });
 
 pool.on('connect', () => {

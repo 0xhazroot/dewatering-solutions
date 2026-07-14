@@ -108,7 +108,8 @@ export const downloadPDF = async (req, res, next) => {
     
     doc.moveDown(1);
     doc.text(quotation.title, 60, doc.y);
-    doc.fillColor('#10b981').text(`$ ${Number(quotation.total).toLocaleString('en-US', { minimumFractionDigits: 2 })} USD`, 450, doc.y);
+    const currencySymbol = quotation.currency === 'PEN' ? 'S/.' : '$';
+    doc.fillColor('#10b981').text(`${currencySymbol} ${Number(quotation.total).toLocaleString('en-US', { minimumFractionDigits: 2 })} ${quotation.currency}`, 450, doc.y);
     
     doc.moveDown(4);
     
