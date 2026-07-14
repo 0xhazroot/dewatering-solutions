@@ -12,7 +12,7 @@ CREATE TABLE users (
     company VARCHAR(200),          -- Para clientes: nombre de su empresa
     position VARCHAR(100),         -- Cargo del contacto
     role VARCHAR(20) NOT NULL DEFAULT 'CLIENT',  
-    -- SUPER_ADMIN | ADMIN | COMMERCIAL | ENGINEER | CLIENT
+    -- SUPER_ADMIN | OPERATOR | CLIENT
     is_active BOOLEAN DEFAULT TRUE,
     avatar_url TEXT,
     created_at TIMESTAMPTZ DEFAULT NOW(),
@@ -182,7 +182,7 @@ CREATE TABLE document_embeddings (
     document_id INT REFERENCES documents(id) ON DELETE CASCADE,
     chunk_index INT NOT NULL,          -- Orden del chunk en el documento
     chunk_text TEXT NOT NULL,           -- Texto original del chunk
-    embedding vector(1536),            -- OpenAI text-embedding-3-small
+    embedding vector(768),             -- Gemini gemini-embedding-2
     metadata JSONB,                    -- Título del doc, página, etc.
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
@@ -190,3 +190,25 @@ CREATE TABLE document_embeddings (
 -- Índice para búsqueda de similitud
 CREATE INDEX idx_embeddings_vector ON document_embeddings 
     USING ivfflat (embedding vector_cosine_ops) WITH (lists = 100);
+
+-- 12. Sucursales (para ABAC Geográfico)
+CREATE TABLE stores (
+    id SERIAL PRIMARY KEY,
+    nombre VARCHAR(255) UNIQUE NOT NULL,
+    ubicacion VARCHAR(255) NOT NULL,
+    image_url TEXT,
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- 13. Trabajos de Entrenamiento de IA en Segundo Plano
+CREATE TABLE ai_training_jobs (
+    id SERIAL PRIMARY KEY,
+    file_name VARCHAR(255) NOT NULL,
+    file_url TEXT NOT NULL,
+    status VARCHAR(30) NOT NULL DEFAULT 'PENDING', -- PENDING, EXTRACTING, EMBEDDING, COMPLETED, FAILED
+    progress INT DEFAULT 0,
+    error_message TEXT,
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    completed_at TIMESTAMPTZ
+);
