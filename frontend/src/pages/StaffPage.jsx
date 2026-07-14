@@ -6,49 +6,28 @@ import api from '../services/api.js';
 
 const StaffPage = () => {
   const [users, setUsers] = useState([]);
-  const [roles, setRoles] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
 
   const fetchData = async () => {
     try {
-      const [uRes, rRes] = await Promise.all([api.get('/users'), api.get('/roles')]);
-      setUsers(uRes.data?.users || uRes.data || []); setRoles(rRes.data?.roles || rRes.data || []);
-    } catch { setUsers([]); setRoles([]); }
-    finally { setLoading(false); }
+      const uRes = await api.get('/users');
+      setUsers(uRes.data?.users || uRes.data || []);
+    } catch {
+      setUsers([]);
+    } finally {
+      setLoading(false);
+    }
   };
   useEffect(() => { fetchData(); }, []);
 
-  const assignRole = async (uid, rid) => {
+  const changeUserRole = async (uid, newRole) => {
     try { 
-      await api.post(`/users/${uid}/roles`, { rol_id: rid }); 
+      await api.put(`/users/${uid}`, { role: newRole }); 
       fetchData(); 
-      Swal.fire({ title: 'Asignado', text: 'Rol asignado correctamente.', icon: 'success', timer: 1500, showConfirmButton: false, background: 'var(--bg-primary)', color: 'var(--text-primary)' });
+      Swal.fire({ title: 'Actualizado', text: 'Rol de usuario actualizado.', icon: 'success', timer: 1500, showConfirmButton: false, background: 'var(--bg-primary)', color: 'var(--text-primary)' });
     }
-    catch (err) { Swal.fire({ title: 'Error', text: err.response?.data?.error || 'Error al asignar rol', icon: 'error', background: 'var(--bg-primary)', color: 'var(--text-primary)' }); }
-  };
-
-  const revokeRole = async (uid, rolId) => {
-    const result = await Swal.fire({
-      title: '¿Revocar rol?',
-      text: '¿Está seguro de revocar este rol del usuario?',
-      icon: 'warning',
-      showCancelButton: true,
-      confirmButtonColor: '#ef4444',
-      cancelButtonColor: '#64748b',
-      confirmButtonText: 'Sí, revocar',
-      cancelButtonText: 'Cancelar',
-      background: 'var(--bg-primary)',
-      color: 'var(--text-primary)'
-    });
-    if (!result.isConfirmed) return;
-
-    try { 
-      await api.delete(`/users/${uid}/roles/${rolId}`); 
-      fetchData(); 
-      Swal.fire({ title: 'Revocado', text: 'Rol revocado correctamente.', icon: 'success', timer: 1500, showConfirmButton: false, background: 'var(--bg-primary)', color: 'var(--text-primary)' });
-    }
-    catch (err) { Swal.fire({ title: 'Error', text: err.response?.data?.error || 'Error al revocar rol', icon: 'error', background: 'var(--bg-primary)', color: 'var(--text-primary)' }); }
+    catch (err) { Swal.fire({ title: 'Error', text: err.response?.data?.error || 'Error al cambiar rol', icon: 'error', background: 'var(--bg-primary)', color: 'var(--text-primary)' }); }
   };
 
   // FIX: Enviar el booleano correcto (invertir estado actual)
@@ -80,7 +59,7 @@ const StaffPage = () => {
       <div className="card"><div style={{ overflowX:'auto' }}>
         <table style={{ width:'100%', borderCollapse:'collapse' }}>
           <thead><tr style={{ borderBottom:'1px solid var(--border-color)' }}>
-            {['Usuario','Correo','Estado','MFA','Roles Asignados','Asignar Rol','Acción'].map(h=><th key={h} style={{ textAlign:'left', padding:'0.75rem 1.25rem', fontSize:'0.72rem', fontWeight:600, color:'var(--text-secondary)', textTransform:'uppercase', letterSpacing:'0.06em' }}>{h}</th>)}
+            {['Usuario','Correo','Estado','MFA','Rol Actual','Cambiar Rol','Acción'].map(h=><th key={h} style={{ textAlign:'left', padding:'0.75rem 1.25rem', fontSize:'0.72rem', fontWeight:600, color:'var(--text-secondary)', textTransform:'uppercase', letterSpacing:'0.06em' }}>{h}</th>)}
           </tr></thead>
           <tbody>
             {loading ? <tr><td colSpan={7} style={{ padding:'3rem', textAlign:'center', color:'var(--text-secondary)' }}>Cargando personal...</td></tr>
@@ -106,31 +85,23 @@ const StaffPage = () => {
                   </span>
                 </td>
                 <td style={{ padding:'0.85rem 1.25rem' }}>
-                  <div style={{ display:'flex', flexWrap:'wrap', gap:'0.35rem' }}>
-                    {u.roles_detail && u.roles_detail.length > 0 ? u.roles_detail.map((r, idx) => (
-                      <span key={idx} style={{ 
-                        display:'inline-flex', alignItems:'center', gap: 4,
-                        padding:'0.15rem 0.5rem', borderRadius:'100px', fontSize:'0.72rem', fontWeight:600,
-                        backgroundColor:'rgba(139,92,246,0.1)', color:'#8b5cf6'
-                      }}>
-                        {r.nombre}
-                        <button onClick={() => revokeRole(u.id, r.id)} style={{ 
-                          background:'none', border:'none', cursor:'pointer', padding:0,
-                          color:'var(--danger)', display:'flex', alignItems:'center'
-                        }} title="Revocar rol">
-                          <Trash2 size={11}/>
-                        </button>
-                      </span>
-                    )) : u.roles?.length > 0 ? u.roles.map((roleName, idx) => (
-                      <span key={idx} style={{ 
-                        padding:'0.15rem 0.5rem', borderRadius:'100px', fontSize:'0.72rem', fontWeight:600,
-                        backgroundColor:'rgba(139,92,246,0.1)', color:'#8b5cf6'
-                      }}>{roleName}</span>
-                    )) : <span style={{ fontSize:'0.8rem', color:'var(--text-secondary)' }}>Sin rol</span>}
-                  </div>
+                  <span style={{ 
+                    padding:'0.15rem 0.5rem', borderRadius:'100px', fontSize:'0.72rem', fontWeight:600,
+                    backgroundColor: u.role === 'SUPER_ADMIN' ? 'rgba(239,68,68,0.1)' : u.role === 'OPERATOR' ? 'rgba(37,99,235,0.1)' : 'rgba(16,185,129,0.1)',
+                    color: u.role === 'SUPER_ADMIN' ? '#ef4444' : u.role === 'OPERATOR' ? '#2563eb' : '#10b981'
+                  }}>{u.role || 'Sin rol'}</span>
                 </td>
                 <td style={{ padding:'0.85rem 1.25rem' }}>
-                  <select className="input-control" style={{ padding:'0.4rem',fontSize:'0.8rem',maxWidth:140 }} onChange={e=>{if(e.target.value)assignRole(u.id,e.target.value);e.target.value='';}} defaultValue=""><option value="" disabled>Seleccionar</option>{roles.map(r=><option key={r.id} value={r.id}>{r.nombre}</option>)}</select>
+                  <select 
+                    className="input-control" 
+                    style={{ padding:'0.4rem',fontSize:'0.8rem',maxWidth:140 }} 
+                    value={u.role || ''} 
+                    onChange={e => changeUserRole(u.id, e.target.value)}
+                  >
+                    <option value="CLIENT">CLIENT</option>
+                    <option value="OPERATOR">OPERATOR</option>
+                    <option value="SUPER_ADMIN">SUPER_ADMIN</option>
+                  </select>
                 </td>
                 <td style={{ padding:'0.85rem 1.25rem' }}>
                   <button className="btn-ghost" onClick={()=>toggleStatus(u.id, u.activo)} 

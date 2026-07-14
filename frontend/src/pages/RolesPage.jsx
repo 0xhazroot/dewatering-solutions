@@ -91,7 +91,7 @@ const RolesPage = () => {
                     <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>{u.email}</div>
                   </td>
                   <td style={{ padding: '0.85rem 1.25rem' }}>
-                    <span style={{ padding: '0.15rem 0.5rem', borderRadius: '100px', fontSize: '0.75rem', fontWeight: 600, backgroundColor: u.role === 'ADMIN' || u.role === 'SUPER_ADMIN' ? 'rgba(139,92,246,0.1)' : 'rgba(10,185,129,0.1)', color: u.role === 'ADMIN' || u.role === 'SUPER_ADMIN' ? '#8b5cf6' : '#10b981' }}>
+                    <span style={{ padding: '0.15rem 0.5rem', borderRadius: '100px', fontSize: '0.75rem', fontWeight: 600, backgroundColor: u.role === 'SUPER_ADMIN' ? 'rgba(239,68,68,0.1)' : u.role === 'OPERATOR' ? 'rgba(37,99,235,0.1)' : 'rgba(10,185,129,0.1)', color: u.role === 'SUPER_ADMIN' ? '#ef4444' : u.role === 'OPERATOR' ? '#2563eb' : '#10b981' }}>
                       {u.role}
                     </span>
                   </td>
@@ -147,7 +147,6 @@ const RolesPage = () => {
                 <select className="input-control" value={form.role} onChange={e => setForm({...form, role: e.target.value})}>
                   <option value="CLIENT">CLIENTE (Solo ver su portal)</option>
                   <option value="OPERATOR">OPERARIO (Operaciones, ver inventario)</option>
-                  <option value="ADMIN">ADMINISTRADOR (Acceso Total)</option>
                   <option value="SUPER_ADMIN">SUPER ADMIN (Auditoría, Roles)</option>
                 </select>
               </div>

@@ -73,12 +73,17 @@ const LeadsPage = () => {
   const handleSendQuote = async () => {
     if (!quoteTitle || !quoteAmount) return Swal.fire('Error', 'Ingrese título y monto', 'error');
     setIsQuoting(true);
+    const amountVal = parseFloat(quoteAmount);
     try {
       await api.post('/quotations', {
         title: quoteTitle,
         description: quoteDesc || `Cotización solicitada por ${selectedLead.company_name}`,
-        amount: parseFloat(quoteAmount),
-        lead_id: selectedLead.id
+        lead_id: selectedLead.id,
+        items: [{ description: quoteTitle, quantity: 1, unit_price: amountVal, subtotal: amountVal }],
+        subtotal: amountVal,
+        tax: 0,
+        total: amountVal,
+        currency: 'USD',
       });
       Swal.fire('¡Éxito!', 'Cotización enviada. El cliente la verá en su portal.', 'success');
       setShowQuoteForm(false);
