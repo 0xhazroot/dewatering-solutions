@@ -1,5 +1,25 @@
+# Dependencies
 node_modules/
+
+# Build output
 dist/
+
+# Environment variables (NEVER commit)
 .env
+.env.local
+.env.production
+
+# OS files
 .DS_Store
+Thumbs.db
+
+# Logs
 *.log
+npm-debug.log*
+
+# IDE
+.vscode/
+.idea/
+
+# Internal reports (not for public repo)
+REPORTE_FEEDBACK.md
