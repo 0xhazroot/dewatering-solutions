@@ -111,13 +111,13 @@ const App = () => {
             
             {/* Rutas Protegidas — Acceso según RBAC */}
             <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
-            <Route path="/inventory" element={<ProtectedRoute requiredRoles={['SUPER_ADMIN', 'ADMIN', 'OPERATOR']}><InventoryPage /></ProtectedRoute>} />
-            <Route path="/stores" element={<ProtectedRoute requiredRoles={['SUPER_ADMIN', 'ADMIN', 'OPERATOR']}><StoresPage /></ProtectedRoute>} />
-            <Route path="/staff" element={<ProtectedRoute requiredRoles={['SUPER_ADMIN', 'ADMIN']}><StaffPage /></ProtectedRoute>} />
-            <Route path="/audit" element={<ProtectedRoute requiredRoles={['SUPER_ADMIN', 'ADMIN']}><AuditPage /></ProtectedRoute>} />
-            <Route path="/roles" element={<ProtectedRoute requiredRoles={['SUPER_ADMIN', 'ADMIN']}><RolesPage /></ProtectedRoute>} />
-            <Route path="/approvals" element={<ProtectedRoute requiredRoles={['SUPER_ADMIN', 'ADMIN']}><ApprovalsPage /></ProtectedRoute>} />
-            <Route path="/ai-training" element={<ProtectedRoute requiredRoles={['SUPER_ADMIN', 'ADMIN']}><AITrainingPage /></ProtectedRoute>} />
+            <Route path="/inventory" element={<ProtectedRoute requiredRoles={['SUPER_ADMIN', 'OPERATOR']}><InventoryPage /></ProtectedRoute>} />
+            <Route path="/stores" element={<ProtectedRoute requiredRoles={['SUPER_ADMIN', 'OPERATOR']}><StoresPage /></ProtectedRoute>} />
+            <Route path="/staff" element={<ProtectedRoute requiredRoles={['SUPER_ADMIN']}><StaffPage /></ProtectedRoute>} />
+            <Route path="/audit" element={<ProtectedRoute requiredRoles={['SUPER_ADMIN']}><AuditPage /></ProtectedRoute>} />
+            <Route path="/roles" element={<ProtectedRoute requiredRoles={['SUPER_ADMIN']}><RolesPage /></ProtectedRoute>} />
+            <Route path="/approvals" element={<ProtectedRoute requiredRoles={['SUPER_ADMIN']}><ApprovalsPage /></ProtectedRoute>} />
+            <Route path="/ai-training" element={<ProtectedRoute requiredRoles={['SUPER_ADMIN']}><AITrainingPage /></ProtectedRoute>} />
             <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
             
             {/* Rutas Cliente Exclusivas */}
@@ -126,11 +126,10 @@ const App = () => {
             <Route path="/client/documents" element={<ProtectedRoute requiredRoles={['CLIENT']}><ClientDocumentsPage /></ProtectedRoute>} />
 
             {/* Rutas CRM */}
-            <Route path="/leads" element={<ProtectedRoute requiredRoles={['SUPER_ADMIN', 'ADMIN', 'OPERATOR']}><LeadsPage /></ProtectedRoute>} />
-            <Route path="/admin/requests" element={<ProtectedRoute requiredRoles={['SUPER_ADMIN', 'ADMIN', 'COMMERCIAL', 'OPERATOR']}><AdminRequestsPage /></ProtectedRoute>} />
-            <Route path="/admin/quotations" element={<ProtectedRoute requiredRoles={['SUPER_ADMIN', 'ADMIN', 'COMMERCIAL', 'OPERATOR']}><AdminQuotationsPage /></ProtectedRoute>} />
-
-            {/* Catch-all */}
+            <Route path="/leads" element={<ProtectedRoute requiredRoles={['SUPER_ADMIN', 'OPERATOR']}><LeadsPage /></ProtectedRoute>} />
+            <Route path="/admin/requests" element={<ProtectedRoute requiredRoles={['SUPER_ADMIN', 'OPERATOR']}><AdminRequestsPage /></ProtectedRoute>} />
+            <Route path="/admin/quotations" element={<ProtectedRoute requiredRoles={['SUPER_ADMIN', 'OPERATOR']}><AdminQuotationsPage /></ProtectedRoute>} />
+                        {/* Catch-all */}
             <Route path="*" element={<Navigate to="/" />} />
           </Routes>
         </BrowserRouter>

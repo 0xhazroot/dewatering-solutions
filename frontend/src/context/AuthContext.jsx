@@ -101,9 +101,7 @@ export const AuthProvider = ({ children }) => {
    * Obtener el rol principal (mayor privilegio)
    */
   const primaryRole = user?.roles?.includes('SUPER_ADMIN') ? 'SUPER_ADMIN'
-    : user?.roles?.includes('ADMIN') ? 'ADMIN'
-    : user?.roles?.includes('COMMERCIAL') ? 'COMMERCIAL'
-    : user?.roles?.includes('ENGINEER') ? 'ENGINEER'
+    : user?.roles?.includes('OPERATOR') ? 'OPERATOR'
     : user?.roles?.includes('CLIENT') ? 'CLIENT'
     : null;
 

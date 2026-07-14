@@ -12,13 +12,13 @@ const navItems = [
     { label: 'Dashboard', icon: LayoutDashboard, path: '/dashboard' },
   ]},
   { section: 'CRM / Comercial', items: [
-    { label: 'Solicitudes Web', icon: Users, path: '/admin/requests', roles: ['SUPER_ADMIN', 'ADMIN', 'OPERATOR'] },
-    { label: 'Gestión Cotizaciones', icon: FileText, path: '/admin/quotations', roles: ['SUPER_ADMIN', 'ADMIN', 'OPERATOR'] },
+    { label: 'Solicitudes Web', icon: Users, path: '/admin/requests', roles: ['SUPER_ADMIN', 'OPERATOR'] },
+    { label: 'Gestión Cotizaciones', icon: FileText, path: '/admin/quotations', roles: ['SUPER_ADMIN', 'OPERATOR'] },
   ]},
   { section: 'Operaciones', items: [
-    { label: 'Inventario', icon: Package, path: '/inventory', roles: ['SUPER_ADMIN', 'ADMIN', 'OPERATOR'] },
-    { label: 'Sucursales', icon: Store, path: '/stores', roles: ['SUPER_ADMIN', 'ADMIN', 'OPERATOR'] },
-    { label: 'Personal', icon: Users, path: '/staff', roles: ['SUPER_ADMIN', 'ADMIN'] },
+    { label: 'Inventario', icon: Package, path: '/inventory', roles: ['SUPER_ADMIN', 'OPERATOR'] },
+    { label: 'Sucursales', icon: Store, path: '/stores', roles: ['SUPER_ADMIN', 'OPERATOR'] },
+    { label: 'Personal', icon: Users, path: '/staff', roles: ['SUPER_ADMIN'] },
   ]},
   { section: 'Área del Cliente', items: [
     { label: 'Mis Proyectos', icon: Store, path: '/client/projects', roles: ['CLIENT'] },
@@ -26,10 +26,10 @@ const navItems = [
     { label: 'Mis Documentos', icon: Package, path: '/client/documents', roles: ['CLIENT'] },
   ]},
   { section: 'Configuración', items: [
-    { label: 'Centro Entrenamiento IA', icon: BrainCircuit, path: '/ai-training', roles: ['SUPER_ADMIN', 'ADMIN'] },
-    { label: 'Aprobación Clientes', icon: ShieldAlert, path: '/approvals', roles: ['SUPER_ADMIN', 'ADMIN'] },
-    { label: 'Auditoría', icon: ShieldAlert, path: '/audit', roles: ['SUPER_ADMIN', 'ADMIN'] },
-    { label: 'Roles y Usuarios', icon: Users, path: '/roles', roles: ['SUPER_ADMIN', 'ADMIN'] },
+    { label: 'Centro Entrenamiento IA', icon: BrainCircuit, path: '/ai-training', roles: ['SUPER_ADMIN'] },
+    { label: 'Aprobación Clientes', icon: ShieldAlert, path: '/approvals', roles: ['SUPER_ADMIN'] },
+    { label: 'Auditoría', icon: ShieldAlert, path: '/audit', roles: ['SUPER_ADMIN'] },
+    { label: 'Roles y Usuarios', icon: Users, path: '/roles', roles: ['SUPER_ADMIN'] },
   ]},
 ];
 
@@ -37,6 +37,15 @@ const DashboardLayout = ({ children, title, subtitle }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const { user, logout, hasRole, primaryRole } = useAuth();
+
+  // Reset scroll to top on route change
+  React.useEffect(() => {
+    window.scrollTo(0, 0);
+    const mainContent = document.querySelector('.main-content');
+    if (mainContent) {
+      mainContent.scrollTop = 0;
+    }
+  }, [location.pathname]);
 
   const handleLogout = () => {
     logout();
@@ -57,7 +66,6 @@ const DashboardLayout = ({ children, title, subtitle }) => {
   // Color del badge de rol
   const roleColors = {
     SUPER_ADMIN: { bg: 'rgba(239,68,68,0.1)', color: '#ef4444' },
-    ADMIN: { bg: 'rgba(139,92,246,0.1)', color: '#8b5cf6' },
     OPERATOR: { bg: 'rgba(37,99,235,0.1)', color: '#2563eb' },
     CLIENT: { bg: 'rgba(10,185,129,0.1)', color: '#10b981' },
   };
