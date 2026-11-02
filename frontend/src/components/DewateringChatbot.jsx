@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Send, X, MessageSquare, Loader2, Download, ExternalLink, ThumbsUp, ThumbsDown, Sparkles, Calculator, FileText, PhoneCall } from 'lucide-react';
+import { Send, X, MessageSquare, Loader2, Download, ExternalLink, ThumbsUp, ThumbsDown, Sparkles, Calculator, FileText, PhoneCall, Paperclip, FileCheck } from 'lucide-react';
 import api from '../services/api';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
@@ -16,7 +16,7 @@ const QUICK_ACTIONS = [
     icon: Calculator
   },
   {
-    label: '📄 Catálogo ISO 9001',
+    label: '📄 Catálogo Oficial',
     prompt: '¿Qué equipos industriales y bombas tienen en su catálogo oficial?',
     icon: FileText
   }
@@ -27,14 +27,16 @@ const DewateringChatbot = () => {
   const [messages, setMessages] = useState([
     {
       role: 'model',
-      text: '¡Hola! Soy el **Ingeniero Virtual** de Dewatering Solutions.\n\nPuedo ayudarte con especificaciones de equipos, dimensionamiento de caudales o generar una cotización para tu proyecto. ¿En qué te puedo asesorar hoy?',
+      text: '¡Hola! Soy el **Ingeniero Virtual** de Dewatering Solutions.\n\nPuedo ayudarte con especificaciones de equipos, dimensionamiento de caudales, análisis de manuales/fotos o generar una cotización para tu proyecto. ¿En qué te puedo asesorar hoy?',
       sources: []
     }
   ]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [attachment, setAttachment] = useState(null); // { name, type, data, preview }
   const [feedbackGiven, setFeedbackGiven] = useState({});
   const messagesEndRef = useRef(null);
+  const fileInputRef = useRef(null);
 
   const apiBase = import.meta.env.VITE_API_URL || (import.meta.env.PROD ? '/api' : 'http://localhost:3000/api');
 
@@ -48,18 +50,65 @@ const DewateringChatbot = () => {
     }
   }, [messages, isOpen]);
 
-  const sendMessageText = async (userMessage) => {
-    if (!userMessage.trim() || isLoading) return;
+  const handleFileChange = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
 
+    if (file.size > 8 * 1024 * 1024) {
+      alert('El archivo no debe exceder los 8 MB.');
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      const resultStr = reader.result;
+      const base64Data = resultStr.split(',')[1];
+      setAttachment({
+        name: file.name,
+        mimeType: file.type || (file.name.endsWith('.pdf') ? 'application/pdf' : 'image/jpeg'),
+        data: base64Data,
+        preview: file.type.startsWith('image/') ? resultStr : null
+      });
+    };
+    reader.readAsDataURL(file);
+    e.target.value = '';
+  };
+
+  const removeAttachment = () => {
+    setAttachment(null);
+  };
+
+  const sendMessageText = async (userMessage, attachObj = null) => {
+    const textToSend = userMessage.trim();
+    if (!textToSend && !attachObj && !attachment) return;
+    if (isLoading) return;
+
+    const currentAttach = attachObj || attachment;
     setInput('');
-    setMessages(prev => [...prev, { role: 'user', text: userMessage }]);
+    setAttachment(null);
+
+    const userBubble = {
+      role: 'user',
+      text: textToSend || (currentAttach ? `[Archivo adjunto: ${currentAttach.name}]` : ''),
+      attachmentPreview: currentAttach?.preview || null,
+      attachmentName: currentAttach?.name || null
+    };
+
+    setMessages(prev => [...prev, userBubble]);
     setIsLoading(true);
 
     try {
       const history = messages.slice(1).map(m => ({ role: m.role, text: m.text }));
       const response = await api.post('/chat', {
-        message: userMessage,
-        history
+        message: textToSend,
+        history,
+        attachment: currentAttach
+          ? {
+              name: currentAttach.name,
+              mimeType: currentAttach.mimeType,
+              data: currentAttach.data
+            }
+          : null
       });
 
       setMessages(prev => [
@@ -87,7 +136,7 @@ const DewateringChatbot = () => {
 
   const handleSend = async (e) => {
     e.preventDefault();
-    await sendMessageText(input.trim());
+    await sendMessageText(input, attachment);
   };
 
   const handleFeedback = async (idx, helpful) => {
@@ -296,7 +345,19 @@ const DewateringChatbot = () => {
                   }}
                 >
                   {msg.role === 'user' ? (
-                    msg.text
+                    <div>
+                      {msg.attachmentPreview && (
+                        <div style={{ marginBottom: '8px', borderRadius: '8px', overflow: 'hidden', maxHeight: '160px' }}>
+                          <img src={msg.attachmentPreview} alt="Adjunto" style={{ width: '100%', height: 'auto', display: 'block' }} />
+                        </div>
+                      )}
+                      {msg.attachmentName && !msg.attachmentPreview && (
+                        <div style={{ marginBottom: '6px', fontSize: '0.78rem', opacity: 0.9, display: 'flex', alignItems: 'center', gap: '5px' }}>
+                          <FileCheck size={14} /> {msg.attachmentName}
+                        </div>
+                      )}
+                      <div>{msg.text}</div>
+                    </div>
                   ) : (
                     <>
                       <ReactMarkdown
@@ -380,7 +441,7 @@ const DewateringChatbot = () => {
                         </div>
                       )}
 
-                      {/* Fuentes RAG y Botones RLHF */}
+                      {/* Fuentes y Botones de Feedback */}
                       <div
                         style={{
                           marginTop: '8px',
@@ -472,14 +533,14 @@ const DewateringChatbot = () => {
                     color: 'var(--text-secondary)'
                   }}
                 >
-                  Ejecutando Agente IA & búsqueda vectorial RAG...
+                  Analizando consulta y documentos...
                 </div>
               </div>
             )}
             <div ref={messagesEndRef} />
           </div>
 
-          {/* Chips de Acción Rápida del Agente IA */}
+          {/* Chips de Acción Rápida */}
           <div
             style={{
               padding: '0.55rem 0.85rem',
@@ -521,7 +582,41 @@ const DewateringChatbot = () => {
             })}
           </div>
 
-          {/* Input Box */}
+          {/* Previsualización del archivo adjunto */}
+          {attachment && (
+            <div
+              style={{
+                padding: '0.4rem 0.85rem',
+                backgroundColor: 'var(--bg-secondary)',
+                borderTop: '1px solid var(--border-color)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                gap: '8px'
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', overflow: 'hidden' }}>
+                {attachment.preview ? (
+                  <img src={attachment.preview} alt="Miniatura" style={{ width: 28, height: 28, objectFit: 'cover', borderRadius: '4px' }} />
+                ) : (
+                  <FileCheck size={18} color="var(--accent-primary)" />
+                )}
+                <span style={{ fontSize: '0.76rem', fontWeight: 600, color: 'var(--text-primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '240px' }}>
+                  {attachment.name}
+                </span>
+              </div>
+              <button
+                type="button"
+                onClick={removeAttachment}
+                style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '2px', color: 'var(--text-secondary)' }}
+                title="Quitar archivo"
+              >
+                <X size={16} />
+              </button>
+            </div>
+          )}
+
+          {/* Input Box con botón de adjuntar PDF / Imagen */}
           <div
             style={{
               padding: '0.75rem 1rem',
@@ -529,12 +624,43 @@ const DewateringChatbot = () => {
               borderTop: '1px solid var(--border-color)'
             }}
           >
-            <form onSubmit={handleSend} style={{ display: 'flex', gap: '0.5rem' }}>
+            {/* Input oculto para subir archivos */}
+            <input
+              type="file"
+              ref={fileInputRef}
+              onChange={handleFileChange}
+              accept="application/pdf,image/png,image/jpeg,image/webp"
+              style={{ display: 'none' }}
+            />
+
+            <form onSubmit={handleSend} style={{ display: 'flex', gap: '0.4rem', alignItems: 'center' }}>
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={isLoading}
+                title="Adjuntar PDF o Foto de equipo / requerimiento"
+                style={{
+                  width: '38px',
+                  height: '38px',
+                  borderRadius: '50%',
+                  backgroundColor: attachment ? 'var(--accent-light)' : 'var(--bg-secondary)',
+                  color: attachment ? 'var(--accent-primary)' : 'var(--text-secondary)',
+                  border: '1px solid var(--border-color)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  cursor: isLoading ? 'not-allowed' : 'pointer',
+                  flexShrink: 0
+                }}
+              >
+                <Paperclip size={17} />
+              </button>
+
               <input
                 type="text"
                 value={input}
                 onChange={e => setInput(e.target.value)}
-                placeholder="Ej. Cotízame el FPA-1500 o calcula para 40 m3/h..."
+                placeholder={attachment ? 'Escribe tu consulta sobre el archivo...' : 'Escribe tu consulta o adjunta un archivo...'}
                 style={{
                   flex: 1,
                   padding: '0.75rem 1rem',
@@ -546,24 +672,26 @@ const DewateringChatbot = () => {
                   fontSize: '0.86rem'
                 }}
               />
+
               <button
                 type="submit"
-                disabled={!input.trim() || isLoading}
+                disabled={(!input.trim() && !attachment) || isLoading}
                 style={{
-                  width: '42px',
-                  height: '42px',
+                  width: '40px',
+                  height: '40px',
                   borderRadius: '50%',
-                  background: input.trim() && !isLoading ? 'var(--accent-primary)' : 'var(--bg-secondary)',
-                  color: input.trim() && !isLoading ? 'white' : 'var(--text-secondary)',
+                  background: (input.trim() || attachment) && !isLoading ? 'var(--accent-primary)' : 'var(--bg-secondary)',
+                  color: (input.trim() || attachment) && !isLoading ? 'white' : 'var(--text-secondary)',
                   border: 'none',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  cursor: input.trim() && !isLoading ? 'pointer' : 'not-allowed',
-                  transition: 'all 0.2s'
+                  cursor: (input.trim() || attachment) && !isLoading ? 'pointer' : 'not-allowed',
+                  transition: 'all 0.2s',
+                  flexShrink: 0
                 }}
               >
-                <Send size={17} style={{ marginLeft: '2px' }} />
+                <Send size={16} style={{ marginLeft: '2px' }} />
               </button>
             </form>
           </div>

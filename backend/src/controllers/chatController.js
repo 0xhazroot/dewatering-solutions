@@ -2,6 +2,7 @@ import { GoogleGenAI } from '@google/genai';
 import { query } from '../config/db.js';
 import leadModel from '../models/leadModel.js';
 import quotationModel from '../models/quotationModel.js';
+import pdfParse from 'pdf-parse-new';
 import dotenv from 'dotenv';
 dotenv.config();
 
@@ -452,26 +453,56 @@ function buildSmartRagResponse(userMessage, knowledge, calcResult, agentAction) 
 
 export const chatWithBot = async (req, res) => {
   try {
-    const { message, history } = req.body;
+    const { message, history, attachment } = req.body;
 
-    if (!message) {
-      return res.status(400).json({ error: 'El mensaje no puede estar vacío.' });
+    if (!message && !attachment) {
+      return res.status(400).json({ error: 'El mensaje o archivo no puede estar vacío.' });
     }
 
+    // Procesamiento de adjuntos (PDF o Imagen)
+    let attachmentSummary = '';
+    let extractedFileText = '';
+
+    if (attachment && attachment.data) {
+      try {
+        const fileBuffer = Buffer.from(attachment.data, 'base64');
+        const mimeType = attachment.mimeType || 'application/pdf';
+
+        if (mimeType === 'application/pdf') {
+          const parsed = await pdfParse(fileBuffer);
+          extractedFileText = parsed.text ? parsed.text.trim().slice(0, 4000) : '';
+          attachmentSummary = `[ARCHIVO ADJUNTO PDF: "${attachment.name || 'documento.pdf'}"]\nContenido técnico extraído:\n${extractedFileText}`;
+        } else if (mimeType.startsWith('image/')) {
+          attachmentSummary = `[IMAGEN TÉCNICA ADJUNTA: "${attachment.name || 'foto.jpg'}"]`;
+        }
+      } catch (err) {
+        console.warn('[Attachment parse warning]:', err.message);
+      }
+    }
+
+    const effectiveUserPrompt = [
+      attachmentSummary,
+      message || (attachment ? 'Por favor analiza este archivo técnico adjunto y asesórame según el catálogo y requerimientos de planta.' : '')
+    ].filter(Boolean).join('\n\n');
+
     // 1. Ejecutar herramientas autónomas del Agente IA (Calculadora Metalúrgica + Function Calling de Cotización/Lead)
-    const calcResult = detectAndRunSizingCalculator(message);
-    const agentAction = await detectAndRunQuotationAgent(message);
+    const calcResult = detectAndRunSizingCalculator(effectiveUserPrompt);
+    const agentAction = await detectAndRunQuotationAgent(effectiveUserPrompt);
 
     // 2. Recuperar contexto RAG y Catálogo
-    const knowledge = await fetchKnowledgeData(message);
+    const knowledge = await fetchKnowledgeData(effectiveUserPrompt);
     const ragSources = Array.from(
       new Set([
         ...knowledge.chunks.map(c => c.source).filter(Boolean),
+        attachment ? `Archivo Adjunto (${attachment.name || 'documento'})` : null,
         'Catálogo Industrial ISO 9001'
       ])
-    ).slice(0, 4);
+    ).filter(Boolean).slice(0, 4);
 
     const sections = [];
+    if (attachmentSummary) {
+      sections.push(`=== ARCHIVO ADJUNTO DEL USUARIO (DOCUMENTO/FOTO) ===\n${attachmentSummary}`);
+    }
     if (agentAction) {
       sections.push(`=== ACCIÓN TRANSACCIONAL EJECUTADA EN CRM ===\n${agentAction.markdownSummary}`);
     }
@@ -512,9 +543,12 @@ export const chatWithBot = async (req, res) => {
     };
 
     if (groqKey && !groqKey.includes('your_groq')) {
-      const groqModelsToTry = process.env.GROQ_MODEL
-        ? [process.env.GROQ_MODEL, 'openai/gpt-oss-120b', 'qwen/qwen3.8-27b']
-        : ['openai/gpt-oss-120b', 'qwen/qwen3.8-27b'];
+      const isImage = attachment?.mimeType?.startsWith('image/');
+      const groqModelsToTry = isImage
+        ? ['qwen/qwen3.8-27b', 'openai/gpt-oss-120b']
+        : (process.env.GROQ_MODEL
+            ? [process.env.GROQ_MODEL, 'openai/gpt-oss-120b', 'qwen/qwen3.8-27b']
+            : ['openai/gpt-oss-120b', 'qwen/qwen3.8-27b']);
 
       for (const gModel of groqModelsToTry) {
         try {
@@ -527,7 +561,22 @@ export const chatWithBot = async (req, res) => {
               });
             });
           }
-          messagesPayload.push({ role: 'user', content: message });
+
+          // Si el usuario envió imagen y el modelo soporta visión
+          if (isImage && gModel.includes('qwen')) {
+            messagesPayload.push({
+              role: 'user',
+              content: [
+                { type: 'text', text: effectiveUserPrompt || 'Analiza esta imagen técnica y asesórame según nuestro catálogo de deshidratación.' },
+                {
+                  type: 'image_url',
+                  image_url: { url: `data:${attachment.mimeType};base64,${attachment.data}` }
+                }
+              ]
+            });
+          } else {
+            messagesPayload.push({ role: 'user', content: effectiveUserPrompt });
+          }
 
           const groqRes = await fetch('https://api.groq.com/openai/v1/chat/completions', {
             method: 'POST',
@@ -608,7 +657,7 @@ export const chatWithBot = async (req, res) => {
       }
       formattedContents.push({
         role: 'user',
-        parts: [{ text: message }]
+        parts: [{ text: effectiveUserPrompt }]
       });
 
       const geminiModelsToTry = process.env.GEMINI_MODEL
@@ -645,7 +694,7 @@ export const chatWithBot = async (req, res) => {
       }
     }
 
-    const fallbackReply = buildSmartRagResponse(message, knowledge, calcResult, agentAction);
+    const fallbackReply = buildSmartRagResponse(effectiveUserPrompt, knowledge, calcResult, agentAction);
     return res.status(200).json({
       response: fallbackReply,
       agentAction,
