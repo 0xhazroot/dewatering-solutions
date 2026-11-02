@@ -10,8 +10,12 @@ dotenv.config();
 
 const apiKey = process.env.GEMINI_API_KEY;
 let ai = null;
-if (apiKey && apiKey.startsWith('AIza')) {
-  ai = new GoogleGenAI({ apiKey });
+if (apiKey) {
+  try {
+    ai = new GoogleGenAI({ apiKey });
+  } catch (_) {
+    ai = null;
+  }
 }
 
 // Función para dividir texto en chunks de aprox 1000 caracteres
@@ -228,7 +232,7 @@ const processBackgroundTraining = async (jobId, file, sourceName, userId) => {
         throw new Error('Para OCR de imágenes se requiere una GEMINI_API_KEY (AIza...) válida en .env.');
       }
       let response = null;
-      for (const visionModel of ['gemini-2.5-flash', 'gemini-2.0-flash']) {
+      for (const visionModel of ['gemini-3-flash-preview', 'gemini-3.1-flash-lite', 'gemini-flash-latest', 'gemini-2.5-flash']) {
         try {
           response = await ai.models.generateContent({
             model: visionModel,

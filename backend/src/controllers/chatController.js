@@ -11,9 +11,13 @@ const openRouterKey = process.env.OPENROUTER_API_KEY;
 const WHATSAPP_CORPORATE_NUMBER = process.env.WHATSAPP_NUMBER || '51987654321';
 
 let ai = null;
+let aiVertex = null;
 if (geminiKey) {
   try {
     ai = new GoogleGenAI({ apiKey: geminiKey });
+    if (geminiKey.startsWith('AQ.')) {
+      aiVertex = new GoogleGenAI({ vertexai: true, apiKey: geminiKey });
+    }
   } catch (_) {
     ai = null;
   }
@@ -397,10 +401,7 @@ function buildSmartRagResponse(userMessage, knowledge, calcResult, agentAction) 
 
   if (!agentAction && !calcResult && (keywords.length === 0 || /^(hola|buenas|buenos|ayuda|info|informacion|quienes son|dewatering)/.test(msg.trim()))) {
     const prodSummary = products.slice(0, 4).map(p => `* **${p.name}** (*${p.origin || 'Importado'}*): ${p.short_description}`).join('\n');
-    const docNote = allRecentChunks.length > 0
-      ? `\n\n📚 **Memoria RAG Activa:** Cuento con **${allRecentChunks.length} fragmentos técnicos** inyectados desde el Centro de Entrenamiento IA.`
-      : '';
-    return `¡Hola! Soy el **Ingeniero Virtual de Dewatering Solutions** (Agente IA con certificación **ISO 9001** en separación sólido-líquido).\n\nPuedo ayudarte en tiempo real con **3 capacidades avanzadas**:\n1. **⚡ Emisión Autónoma de Pre-Cotizaciones PDF y Registro CRM:** Pídeme *"Cotízame el Filtro Prensa FPA-1500"* y generaré el PDF con QR al instante.\n2. **🧮 Calculadora de Dimensionamiento Metalúrgico:** Dime tu caudal (ej. *"Calcula para 45 m3/h con 30% de sólidos"*).\n3. **📄 Consulta RAG sobre Manuales y Catálogo Oficial:**\n${prodSummary}${docNote}`;
+    return `¡Hola! Soy el **Ingeniero Virtual de Dewatering Solutions**.\n\nEstoy aquí para orientarte en nuestros equipos y soluciones de deshidratación industrial:\n\n${prodSummary}\n\n¿En qué te puedo asesorar hoy?`;
   }
 
   if (relevantChunks.length > 0) {
@@ -511,42 +512,49 @@ export const chatWithBot = async (req, res) => {
     };
 
     if (groqKey && !groqKey.includes('your_groq')) {
-      try {
-        const messagesPayload = [{ role: 'system', content: dynamicSystemContext }];
-        if (Array.isArray(history)) {
-          history.forEach(msg => {
-            messagesPayload.push({
-              role: msg.role === 'user' ? 'user' : 'assistant',
-              content: msg.text
+      const groqModelsToTry = process.env.GROQ_MODEL
+        ? [process.env.GROQ_MODEL, 'openai/gpt-oss-120b', 'qwen/qwen3.8-27b']
+        : ['openai/gpt-oss-120b', 'qwen/qwen3.8-27b'];
+
+      for (const gModel of groqModelsToTry) {
+        try {
+          const messagesPayload = [{ role: 'system', content: dynamicSystemContext }];
+          if (Array.isArray(history)) {
+            history.forEach(msg => {
+              messagesPayload.push({
+                role: msg.role === 'user' ? 'user' : 'assistant',
+                content: msg.text
+              });
             });
-          });
-        }
-        messagesPayload.push({ role: 'user', content: message });
+          }
+          messagesPayload.push({ role: 'user', content: message });
 
-        const groqRes = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${groqKey}`
-          },
-          body: JSON.stringify({
-            model: process.env.GROQ_MODEL || 'llama-3.3-70b-versatile',
-            messages: messagesPayload,
-            temperature: 0.3,
-            max_tokens: 2048
-          })
-        });
-
-        if (groqRes.ok) {
-          const data = await groqRes.json();
-          return res.status(200).json({
-            response: finalizeReply(data.choices[0].message.content),
-            agentAction,
-            calcResult,
-            sources: ragSources
+          const groqRes = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${groqKey}`
+            },
+            body: JSON.stringify({
+              model: gModel,
+              messages: messagesPayload,
+              temperature: 0.3,
+              max_tokens: 2048
+            })
           });
-        }
-      } catch (_) {}
+
+          if (groqRes.ok) {
+            const data = await groqRes.json();
+            return res.status(200).json({
+              response: finalizeReply(data.choices[0].message.content),
+              agentAction,
+              calcResult,
+              sources: ragSources,
+              modelUsed: `Groq (${gModel})`
+            });
+          }
+        } catch (_) {}
+      }
     }
 
     if (openRouterKey && !openRouterKey.includes('your_key')) {
@@ -604,31 +612,36 @@ export const chatWithBot = async (req, res) => {
       });
 
       const geminiModelsToTry = process.env.GEMINI_MODEL
-        ? [process.env.GEMINI_MODEL, 'gemini-2.5-flash', 'gemini-2.0-flash']
-        : ['gemini-2.5-flash', 'gemini-2.0-flash', 'gemini-2.0-flash-lite'];
+        ? [process.env.GEMINI_MODEL, 'gemini-3-flash-preview', 'gemini-3.1-flash-lite', 'gemini-flash-latest']
+        : ['gemini-3-flash-preview', 'gemini-3.1-flash-lite', 'gemini-flash-latest', 'gemini-2.5-flash'];
 
-      for (const modelName of geminiModelsToTry) {
-        try {
-          const response = await ai.models.generateContent({
-            model: modelName,
-            contents: formattedContents,
-            config: {
-              systemInstruction: dynamicSystemContext,
-              temperature: 0.3,
-              maxOutputTokens: 2048
-            }
-          });
+      const clientsToTry = aiVertex ? [ai, aiVertex] : [ai];
 
-          if (response?.text) {
-            return res.status(200).json({
-              response: finalizeReply(response.text),
-              modelUsed: modelName,
-              agentAction,
-              calcResult,
-              sources: ragSources
+      for (const clientInstance of clientsToTry) {
+        if (!clientInstance) continue;
+        for (const modelName of geminiModelsToTry) {
+          try {
+            const response = await clientInstance.models.generateContent({
+              model: modelName,
+              contents: formattedContents,
+              config: {
+                systemInstruction: dynamicSystemContext,
+                temperature: 0.3,
+                maxOutputTokens: 2048
+              }
             });
-          }
-        } catch (_) {}
+
+            if (response?.text) {
+              return res.status(200).json({
+                response: finalizeReply(response.text),
+                modelUsed: modelName,
+                agentAction,
+                calcResult,
+                sources: ragSources
+              });
+            }
+          } catch (_) {}
+        }
       }
     }
 

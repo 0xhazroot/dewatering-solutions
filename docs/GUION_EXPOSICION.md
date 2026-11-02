@@ -62,16 +62,23 @@
 
 *(Opcional en vivo: Escribir un título como `Norma Operativa Cerro Verde 2026` y un texto corto, darle a **"Entrenar Modelo IA"** y mostrar cómo aparece al instante en la columna derecha de "Conocimiento Actual").*
 
+**[🖥️ En pantalla: Abrir el widget del "Ingeniero Virtual IA" y hacer clic en los chips `🧮 Dimensionar (45 m³/h, 32% Cp)` y `⚡ Cotizar FPA-1500 (Agente IA)`]**
+
+> **🗣️ Qué decir (La joya de la corona — El Agente IA Transaccional):**
+> "Además de ser un motor RAG Multimodal, evolucionamos al Ingeniero Virtual hacia un **Agente IA Transaccional con Ejecución de Herramientas (*Function Calling*)**:
+> * **1. Calculadora Metalúrgica Integrada:** Cuando un ingeniero de planta ingresa su caudal y porcentaje de sólidos (por ejemplo, `45 m³/h con 32% de sólidos`), el agente ejecuta nuestro balance metalúrgico en el backend, calculando la densidad de pulpa (`1.28 t/m³`), el tonelaje seco (`18.14 TPH` / `435 TPD`), el área de filtración requerida (`165 m²`) y seleccionando el equipo óptimo del catálogo.
+> * **2. Emisión Autónoma de Leads y Cotizaciones PDF con Código QR:** Si el cliente pide cotizar un equipo desde el chat, el Agente IA no solo le responde con texto: se conecta transaccionalmente con nuestra base de datos, **registra automáticamente al prospecto en el CRM Kanban con prioridad Alta** y **emite en vivo una Pre-Cotización Oficial (`COT-2026-XXXX`) con desglose de IGV (18%) y Sello QR**, entregándole aquí mismo en el chat el botón para descargar el PDF oficial o enviarlo directo a **WhatsApp Business**."
+
 ---
 
-## 📊 BLOQUE 4: CRM Kanban, Cotizaciones PDF y Auditoría Forense (Minuto 5:30 - 7:00)
+## 📊 BLOQUE 4: CRM Kanban Omnicanal, Cotizaciones PDF con QR y Auditoría Forense (Minuto 5:30 - 7:00)
 
 **[🖥️ En pantalla: Entrar a `Prospectos CRM (/leads)`, luego a `Cotizaciones (/admin/quotations)` y descargar el PDF de `COT-2026-0001`, y finalmente mostrar `Auditoría (/audit)`]**
 
 > **🗣️ Qué decir:**
 > "En la parte operativa del negocio:
-> * Cuando una empresa minera llena el formulario público de contacto, el requerimiento cae automáticamente aquí en el **Pipeline Kanban de Leads (`/leads`)**, donde el equipo comercial e ingeniería gestiona el ciclo completo desde `NEW` y `CONTACTED` hasta `PROPOSAL` y `WON`.
-> * Desde cualquier prospecto podemos emitir una cotización formal en el **Motor de Cotizaciones (`/admin/quotations`)**. Al hacer clic en descargar PDF, el controlador `quotationController.js` genera en tiempo real mediante `PDFKit` un documento oficial numerado correlativamente (`COT-2026-0001`), renderizando dinámicamente los impuestos (IGV 18%) y soportando **multimoneda tanto en Dólares (`USD $`) como en Soles (`PEN S/.`)**.
+> * Cuando una empresa minera llena el formulario web o interactúa con el **Agente IA**, el requerimiento cae automáticamente aquí en el **Pipeline Kanban de Leads (`/leads`)**, identificando con el badge **`✨ Agente IA`** los prospectos capturados autónomamente. Además, integramos **Omnicanalidad con WhatsApp Business (`wa.me`)** en cada tarjeta y modal para contactar al cliente en un clic con un mensaje técnico personalizado.
+> * En el **Motor de Cotizaciones (`/admin/quotations`)**, al hacer clic en **`PDF + QR`**, el controlador `quotationController.js` genera en tiempo real mediante `PDFKit` y `qrcode` un documento oficial numerado correlativamente (`COT-2026-XXXX`), con cálculo automático de Subtotal + IGV (18%), soporte **multimoneda (`USD $` / `PEN S/.`)** y un **Sello QR de Verificación Digital** para validar la autenticidad de la oferta, además de envío directo por **WhatsApp Business**.
 > * Finalmente, en el módulo de **Auditoría (`/audit`)**, gestionado por `auditService.js`, cada acción crítica del sistema (`CREATE`, `UPDATE`, `DELETE`, `UPDATE_STATUS`) queda registrada de forma inmutable en la tabla `audit_logs`, guardando el usuario, la dirección IP, la marca de tiempo y el *diff* exacto en formato `JSONB` (`old_data` versus `new_data`)."
 
 ---

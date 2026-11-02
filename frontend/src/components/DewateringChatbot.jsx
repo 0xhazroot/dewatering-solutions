@@ -27,8 +27,8 @@ const DewateringChatbot = () => {
   const [messages, setMessages] = useState([
     {
       role: 'model',
-      text: '¡Hola! Soy el **Ingeniero Virtual (Agente IA Transaccional)** de Dewatering Solutions.\n\nPuedo **dimensionar equipos metalúrgicos**, responder consultas con **Memoria RAG** o **emitir una Pre-Cotización Oficial en PDF (con QR)** directamente en nuestro CRM. ¿En qué te ayudo hoy?',
-      sources: ['Catálogo Industrial ISO 9001', 'Motor Agente IA v2.5']
+      text: '¡Hola! Soy el **Ingeniero Virtual** de Dewatering Solutions.\n\nPuedo ayudarte con especificaciones de equipos, dimensionamiento de caudales o generar una cotización para tu proyecto. ¿En qué te puedo asesorar hoy?',
+      sources: []
     }
   ]);
   const [input, setInput] = useState('');
@@ -203,15 +203,10 @@ const DewateringChatbot = () => {
                 <img src="/chatbot-mascot.png" alt="Ingeniero Virtual" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
               </div>
               <div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                  <h3 style={{ margin: 0, fontSize: '0.95rem', fontWeight: 700 }}>Ingeniero Virtual IA</h3>
-                  <span style={{ fontSize: '0.65rem', backgroundColor: 'rgba(255,255,255,0.22)', padding: '2px 6px', borderRadius: '99px', fontWeight: 600 }}>
-                    RAG + Agente
-                  </span>
-                </div>
-                <span style={{ fontSize: '0.73rem', opacity: 0.9, display: 'flex', alignItems: 'center', gap: '4px' }}>
-                  <span style={{ width: 6, height: 6, backgroundColor: '#4ade80', borderRadius: '50%', display: 'inline-block' }}></span>
-                  Conectado a CRM & Catálogo ISO 9001
+                <h3 style={{ margin: 0, fontSize: '0.98rem', fontWeight: 700 }}>Ingeniero Virtual</h3>
+                <span style={{ fontSize: '0.73rem', opacity: 0.9, display: 'flex', alignItems: 'center', gap: '5px' }}>
+                  <span style={{ width: 7, height: 7, backgroundColor: '#4ade80', borderRadius: '50%', display: 'inline-block' }}></span>
+                  En línea
                 </span>
               </div>
             </div>
