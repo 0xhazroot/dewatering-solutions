@@ -363,13 +363,29 @@ const DewateringChatbot = () => {
                       <ReactMarkdown
                         remarkPlugins={[remarkGfm]}
                         components={{
-                          p: ({ node, ...props }) => <p style={{ margin: '0 0 8px 0' }} {...props} />,
-                          ul: ({ node, ...props }) => <ul style={{ margin: '0 0 8px 0', paddingLeft: '18px' }} {...props} />,
-                          ol: ({ node, ...props }) => <ol style={{ margin: '0 0 8px 0', paddingLeft: '18px' }} {...props} />,
+                          p: ({ node, ...props }) => <p style={{ margin: '0 0 8px 0', lineHeight: 1.55 }} {...props} />,
+                          ul: ({ node, ...props }) => <ul style={{ margin: '0 0 10px 0', paddingLeft: '18px' }} {...props} />,
+                          ol: ({ node, ...props }) => <ol style={{ margin: '0 0 10px 0', paddingLeft: '18px' }} {...props} />,
                           li: ({ node, ...props }) => <li style={{ marginBottom: '4px' }} {...props} />,
-                          h3: ({ node, ...props }) => <h3 style={{ margin: '10px 0 6px 0', fontSize: '0.95rem', color: 'var(--accent-primary)' }} {...props} />,
-                          h4: ({ node, ...props }) => <h4 style={{ margin: '8px 0 4px 0', fontSize: '0.9rem' }} {...props} />,
+                          h3: ({ node, ...props }) => <h3 style={{ margin: '12px 0 6px 0', fontSize: '0.96rem', fontWeight: 700, color: 'var(--accent-primary)', borderBottom: '1px solid var(--border-color)', paddingBottom: '3px' }} {...props} />,
+                          h4: ({ node, ...props }) => <h4 style={{ margin: '10px 0 4px 0', fontSize: '0.88rem', fontWeight: 600, color: 'var(--text-primary)' }} {...props} />,
                           strong: ({ node, ...props }) => <strong style={{ fontWeight: 600, color: 'var(--accent-primary)' }} {...props} />,
+                          table: ({ node, ...props }) => (
+                            <div style={{ overflowX: 'auto', margin: '10px 0', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
+                              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.78rem' }} {...props} />
+                            </div>
+                          ),
+                          thead: ({ node, ...props }) => <thead style={{ backgroundColor: 'var(--bg-secondary)', borderBottom: '2px solid var(--border-color)' }} {...props} />,
+                          th: ({ node, ...props }) => <th style={{ padding: '6px 10px', textAlign: 'left', fontWeight: 700, color: 'var(--text-primary)' }} {...props} />,
+                          td: ({ node, ...props }) => <td style={{ padding: '6px 10px', borderBottom: '1px solid var(--border-color)', color: 'var(--text-secondary)' }} {...props} />,
+                          pre: ({ node, ...props }) => (
+                            <pre style={{ backgroundColor: '#0f172a', color: '#38bdf8', padding: '8px 12px', borderRadius: '8px', fontSize: '0.76rem', overflowX: 'auto', margin: '8px 0', fontFamily: 'monospace' }} {...props} />
+                          ),
+                          code: ({ node, inline, ...props }) => (
+                            inline
+                              ? <code style={{ backgroundColor: 'var(--bg-secondary)', color: 'var(--accent-primary)', padding: '2px 5px', borderRadius: '4px', fontSize: '0.8rem', border: '1px solid var(--border-color)', fontFamily: 'monospace' }} {...props} />
+                              : <code {...props} />
+                          ),
                           hr: ({ node, ...props }) => <hr style={{ border: 'none', borderTop: '1px solid var(--border-color)', margin: '10px 0' }} {...props} />
                         }}
                       >

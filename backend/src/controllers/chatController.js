@@ -87,14 +87,21 @@ const DEFAULT_SERVICES = [
 ];
 
 const baseSystemContext = `
-Eres el "Ingeniero Virtual" (Agente IA Transaccional y RAG Multimodal) de Dewatering Solutions (Lima, Perú), empresa líder certificada ISO 9001 especializada en separación sólido-líquido para el sector minero e industrial.
-Tu objetivo es asistir a ingenieros metalurgistas, superintendentes de planta y clientes corporativos.
+Eres el "Ingeniero Virtual" de Dewatering Solutions (Lima, Perú), empresa especializada en separación sólido-líquido y equipos para minería e industria.
+Tu objetivo es responder de forma DIRECTA, CONCISA, ELEGANTE y 100% ENFOCADA en lo que el usuario pregunta o en el archivo adjunto que envía.
 
-REGLAS ESTRICTAS:
-1. Responde de forma profesional, técnica y estructurada. Emplea viñetas claras, negritas y párrafos breves. No utilices LaTeX complejo.
-2. Eres capaz de resolver cálculos matemáticos, dimensionamiento metalúrgico de equipos (caudales, presiones, tonelaje seco, áreas de filtración) y emitir pre-cotizaciones automáticas en el CRM.
-3. Cuando te pregunten sobre Dewatering Solutions, su catálogo de equipos, servicios de laboratorio/pilotaje o documentos técnicos, utiliza SIEMPRE la "MEMORIA RAG Y CATÁLOGO OFICIAL" proporcionada abajo.
-4. Si el sistema ejecutó una herramienta del Agente (como Cálculo Metalúrgico o Generación de Cotización PDF en Base de Datos), incluye y explica los resultados generados con precisión.
+REGLAS DE ORO DE RESPUESTA:
+1. SÉ PRECISO Y NO INVENTES INFORMACIÓN: Si el usuario te envía un documento, código, imagen o pregunta específica, limítate ESTRICTAMENTE a responder lo que te pide sobre ese material o tema. NO agregues balances de pulpa, cálculos metalúrgicos ni fichas técnicas completas a menos que el usuario te lo pida explícitamente.
+2. FORMATO LIMPIO, ESCANEABLE Y VISUAL:
+   - Evita párrafos largos o saturados de texto. Usa títulos cortos, viñetas (\`•\`) y negritas (\`**\`) solo en datos clave.
+   - Si el usuario pide comparar equipos o alternativas, presenta una TABLA COMPARATIVA Markdown limpia y fácil de leer.
+   - En comparaciones de rendimiento o capacidades numéricas, puedes incluir gráficos de barras de texto ASCII minimalistas para máxima claridad visual. Ejemplo:
+     \`\`\`text
+     FPA-1500: [████████████████████] 50 m³/h (16 bar)
+     FPM-800:  [██████] 15 m³/h (12 bar)
+     \`\`\`
+3. TONO DE INGENIERO SENIOR: Profesional, amable, directo y sin rodeos. Ve al grano desde la primera línea.
+4. Si el documento o consulta NO está relacionado con separación sólido-líquido (por ejemplo, es un script de Python, código o un examen universitario), responde con total solvencia técnica y amabilidad a lo que contiene ese documento, sin forzar la venta de bombas ni filtros prensa.
 `;
 
 // ============================================================================
@@ -102,23 +109,27 @@ REGLAS ESTRICTAS:
 // ============================================================================
 function detectAndRunSizingCalculator(userMessage) {
   const msg = userMessage.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-  const hasCalcIntent =
-    msg.includes('calcul') ||
-    msg.includes('dimension') ||
-    msg.includes('m3/h') ||
-    msg.includes('m³/h') ||
-    msg.includes('tph') ||
-    msg.includes('tpd') ||
-    (msg.includes('caudal') && /\d/.test(msg)) ||
-    (msg.includes('solidos') && /\d/.test(msg));
 
-  if (!hasCalcIntent) return null;
+  // Solo activar si el usuario explícitamente pide calcular o dimensionar
+  const hasExplicitIntent =
+    msg.includes('calcula') ||
+    msg.includes('calcular') ||
+    msg.includes('dimensiona') ||
+    msg.includes('dimensionar') ||
+    msg.includes('dimensionamiento') ||
+    (msg.includes('caudal') && msg.includes('filtro')) ||
+    (msg.includes('m3/h') && msg.includes('filtro'));
 
-  // Extraer caudal (m3/h) y % de sólidos si el usuario los indica; usar valores típicos de planta si no
+  if (!hasExplicitIntent) return null;
+
+  // Requerir que haya un número real de caudal
   const flowMatch = msg.match(/(\d+(?:\.\d+)?)\s*(?:m3\/h|m³\/h|m3|metros cubicos)/i) || msg.match(/caudal\s*(?:de)?\s*(\d+(?:\.\d+)?)/i);
-  const solidsMatch = msg.match(/(\d+(?:\.\d+)?)\s*%\s*(?:de\s*solidos|solidos|cp)?/i);
+  if (!flowMatch) return null;
 
-  const flowM3h = flowMatch ? parseFloat(flowMatch[1]) : 42;
+  const flowM3h = parseFloat(flowMatch[1]);
+  if (isNaN(flowM3h) || flowM3h <= 0) return null;
+
+  const solidsMatch = msg.match(/(\d+(?:\.\d+)?)\s*%\s*(?:de\s*solidos|solidos|cp)?/i);
   const solidsPct = solidsMatch ? Math.min(Math.max(parseFloat(solidsMatch[1]), 5), 75) : 32;
 
   // Balance metalúrgico de pulpa (Gravedad específica mineral típica Sg = 2.75)
@@ -174,13 +185,15 @@ function detectAndRunSizingCalculator(userMessage) {
 // ============================================================================
 async function detectAndRunQuotationAgent(userMessage) {
   const msg = userMessage.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+
+  // Solo activar si el usuario pide explícitamente cotizar
   const hasQuoteIntent =
-    msg.includes('cotiz') ||
-    msg.includes('proforma') ||
-    msg.includes('presupuesto') ||
-    msg.includes('generar pdf') ||
-    msg.includes('comprar') ||
-    msg.includes('precio formal');
+    msg.includes('cotiza') ||
+    msg.includes('cotizar') ||
+    msg.includes('cotizame') ||
+    msg.includes('emitir cotizacion') ||
+    msg.includes('generar cotizacion') ||
+    msg.includes('proforma formal');
 
   if (!hasQuoteIntent) return null;
 
@@ -485,12 +498,13 @@ export const chatWithBot = async (req, res) => {
       message || (attachment ? 'Por favor analiza este archivo técnico adjunto y asesórame según el catálogo y requerimientos de planta.' : '')
     ].filter(Boolean).join('\n\n');
 
-    // 1. Ejecutar herramientas autónomas del Agente IA (Calculadora Metalúrgica + Function Calling de Cotización/Lead)
-    const calcResult = detectAndRunSizingCalculator(effectiveUserPrompt);
-    const agentAction = await detectAndRunQuotationAgent(effectiveUserPrompt);
+    // 1. Ejecutar herramientas autónomas SOLO sobre el mensaje explícito del usuario (no sobre texto incidental del archivo)
+    const calcResult = detectAndRunSizingCalculator(message || '');
+    const agentAction = await detectAndRunQuotationAgent(message || '');
 
-    // 2. Recuperar contexto RAG y Catálogo
-    const knowledge = await fetchKnowledgeData(effectiveUserPrompt);
+    // 2. Recuperar contexto RAG y Catálogo según la consulta
+    const queryForKnowledge = message && message.trim() ? message : (attachment ? 'resumen documento técnico' : '');
+    const knowledge = await fetchKnowledgeData(queryForKnowledge);
     const ragSources = Array.from(
       new Set([
         ...knowledge.chunks.map(c => c.source).filter(Boolean),
