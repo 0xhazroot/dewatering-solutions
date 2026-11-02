@@ -457,66 +457,71 @@ const DewateringChatbot = () => {
                         </div>
                       )}
 
-                      {/* Fuentes y Botones de Feedback */}
+                      {/* Botones de Feedback con Efecto Hover Zoom (Azul / Rojo) */}
                       <div
                         style={{
-                          marginTop: '8px',
+                          marginTop: '6px',
                           paddingTop: '6px',
-                          borderTop: '1px dashed var(--border-color)',
+                          borderTop: '1px solid var(--border-color)',
                           display: 'flex',
                           alignItems: 'center',
-                          justifyContent: 'space-between',
-                          gap: '6px',
-                          flexWrap: 'wrap'
+                          justifyContent: 'flex-end',
+                          gap: '12px'
                         }}
                       >
-                        <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
-                          {(msg.sources || []).slice(0, 2).map((src, sIdx) => (
-                            <span
-                              key={sIdx}
-                              style={{
-                                fontSize: '0.68rem',
-                                backgroundColor: 'var(--bg-secondary)',
-                                color: 'var(--text-secondary)',
-                                padding: '2px 6px',
-                                borderRadius: '4px',
-                                border: '1px solid var(--border-color)'
-                              }}
-                            >
-                              📚 {src}
-                            </span>
-                          ))}
-                        </div>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                          <button
-                            type="button"
-                            onClick={() => handleFeedback(idx, true)}
-                            title="Respuesta útil"
-                            style={{
-                              background: 'none',
-                              border: 'none',
-                              cursor: 'pointer',
-                              padding: '2px',
-                              color: feedbackGiven[idx] === 'up' ? '#10b981' : 'var(--text-secondary)'
-                            }}
-                          >
-                            <ThumbsUp size={13} />
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => handleFeedback(idx, false)}
-                            title="Mejorar respuesta"
-                            style={{
-                              background: 'none',
-                              border: 'none',
-                              cursor: 'pointer',
-                              padding: '2px',
-                              color: feedbackGiven[idx] === 'down' ? '#ef4444' : 'var(--text-secondary)'
-                            }}
-                          >
-                            <ThumbsDown size={13} />
-                          </button>
-                        </div>
+                        <button
+                          type="button"
+                          onClick={() => handleFeedback(idx, true)}
+                          title="Me gusta"
+                          style={{
+                            background: 'none',
+                            border: 'none',
+                            cursor: 'pointer',
+                            padding: '4px',
+                            color: feedbackGiven[idx] === 'up' ? '#2563eb' : 'var(--text-secondary)',
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            transition: 'all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275)'
+                          }}
+                          onMouseEnter={e => {
+                            e.currentTarget.style.transform = 'scale(1.35)';
+                            e.currentTarget.style.color = '#2563eb';
+                          }}
+                          onMouseLeave={e => {
+                            e.currentTarget.style.transform = 'scale(1)';
+                            e.currentTarget.style.color = feedbackGiven[idx] === 'up' ? '#2563eb' : 'var(--text-secondary)';
+                          }}
+                        >
+                          <ThumbsUp size={15} />
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() => handleFeedback(idx, false)}
+                          title="No me gusta"
+                          style={{
+                            background: 'none',
+                            border: 'none',
+                            cursor: 'pointer',
+                            padding: '4px',
+                            color: feedbackGiven[idx] === 'down' ? '#ef4444' : 'var(--text-secondary)',
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            transition: 'all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275)'
+                          }}
+                          onMouseEnter={e => {
+                            e.currentTarget.style.transform = 'scale(1.35)';
+                            e.currentTarget.style.color = '#ef4444';
+                          }}
+                          onMouseLeave={e => {
+                            e.currentTarget.style.transform = 'scale(1)';
+                            e.currentTarget.style.color = feedbackGiven[idx] === 'down' ? '#ef4444' : 'var(--text-secondary)';
+                          }}
+                        >
+                          <ThumbsDown size={15} />
+                        </button>
                       </div>
                     </>
                   )}
