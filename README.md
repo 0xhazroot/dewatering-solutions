@@ -2,364 +2,371 @@
 
 # 💧 Dewatering Solutions Platform
 
-### Enterprise-Grade Industrial Services Management System
+### Ecosistema Industrial Full-Stack: Portal Corporativo · CRM/ERP · Portal B2B · Chatbot IA (RAG)
 
-[![Node.js](https://img.shields.io/badge/Node.js-22-339933?style=for-the-badge&logo=node.js&logoColor=white)](https://nodejs.org/)
+[![AWS](https://img.shields.io/badge/AWS-Cloud_Ready-FF9900?style=for-the-badge&logo=amazon-aws&logoColor=white)](https://aws.amazon.com/)
+[![Docker](https://img.shields.io/badge/Docker-Multi--Stage-2496ED?style=for-the-badge&logo=docker&logoColor=white)](https://www.docker.com/)
+[![Nginx](https://img.shields.io/badge/Nginx-Reverse_Proxy-009639?style=for-the-badge&logo=nginx&logoColor=white)](https://nginx.org/)
+[![Node.js](https://img.shields.io/badge/Node.js-22_LTS-339933?style=for-the-badge&logo=node.js&logoColor=white)](https://nodejs.org/)
 [![React](https://img.shields.io/badge/React-19-61DAFB?style=for-the-badge&logo=react&logoColor=black)](https://react.dev/)
 [![Express](https://img.shields.io/badge/Express-5-000000?style=for-the-badge&logo=express&logoColor=white)](https://expressjs.com/)
-[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-4169E1?style=for-the-badge&logo=postgresql&logoColor=white)](https://www.postgresql.org/)
-[![Docker](https://img.shields.io/badge/Docker-Ready-2496ED?style=for-the-badge&logo=docker&logoColor=white)](https://www.docker.com/)
-[![Google Cloud](https://img.shields.io/badge/Google_Cloud-Deploy-4285F4?style=for-the-badge&logo=google-cloud&logoColor=white)](https://cloud.google.com/)
-[![License](https://img.shields.io/badge/License-Proprietary-red?style=for-the-badge)](#license)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL_16-pgvector-4169E1?style=for-the-badge&logo=postgresql&logoColor=white)](https://www.postgresql.org/)
+[![Google Gemini](https://img.shields.io/badge/Google_Gemini-RAG_AI-8E75B2?style=for-the-badge&logo=googlegemini&logoColor=white)](https://ai.google.dev/)
 
-**A full-stack web platform built for an industrial dewatering company specializing in solid-liquid separation solutions for the mining and industrial sectors.**
+**Plataforma empresarial diseñada para Dewatering Solutions (Lima, Perú), especialista en ingeniería de separación sólido-líquido para el sector minero e industrial bajo certificación ISO 9001.**
 
-[Features](#-features) • [Architecture](#-architecture) • [Tech Stack](#-tech-stack) • [Getting Started](#-getting-started) • [Deployment](#-deployment) • [Project Structure](#-project-structure)
+[Arquitectura](#-arquitectura-general-del-sistema) • [Chatbot IA (RAG)](#-arquitectura-del-chatbot-ia-ingeniero-virtual) • [Cloud & DevOps (AWS)](#-arquitectura-cloud--devops-aws) • [Seguridad Zero-Trust](#-seguridad-zero-trust-y-auditoría) • [Pruebas & QA](#-pruebas-health-checks-y-qa) • [Estructura](#-estructura-del-proyecto)
 
 </div>
 
 ---
 
-## 🎯 Overview
+## 🎯 Descripción General
 
-Dewatering Solutions Platform is a comprehensive business management system designed for an industrial engineering company based in Lima, Perú. The platform integrates a **public-facing corporate website**, an **internal CRM/ERP dashboard**, and an **AI-powered technical assistant** — all within a single, unified application.
+**Dewatering Solutions Platform** unifica el ciclo comercial, operativo y de soporte técnico de ingeniería en una arquitectura distribuida en contenedores:
 
-The system supports the complete business lifecycle: from lead acquisition and quotation management to project tracking and technical document distribution.
-
----
-
-## ✨ Features
-
-### 🌐 Public Website
-- **Modern landing page** with animated hero section and corporate branding
-- **Service catalog** organized by category (filtration, thickening, flotation, leaching, and more)
-- **Product showcase** for industrial equipment with technical specifications
-- **Project portfolio** displaying completed works and case studies
-- **Contact forms** that automatically generate leads in the CRM pipeline
-
-### 📊 Admin Dashboard & CRM
-- **Executive dashboard** with real-time KPIs (leads, quotations, revenue metrics)
-- **Lead management** with full CRM pipeline (New → Contacted → Evaluating → Proposal → Won/Lost)
-- **Quotation engine** — create, version, and track professional quotations with PDF generation
-- **Project management** — post-sale project tracking with status workflows
-- **Inventory & product management** — CRUD for industrial equipment catalog
-- **Store/branch management** — multi-location support with geographic data
-
-### 🔐 Security & Access Control
-- **JWT authentication** with configurable token expiration
-- **Multi-Factor Authentication (MFA/TOTP)** — compatible with Google Authenticator
-- **Role-Based Access Control (RBAC)** — `SUPER_ADMIN` · `OPERATOR` · `CLIENT`
-- **Attribute-Based Access Control (ABAC)** — fine-grained policies based on user attributes
-- **Comprehensive audit trail** — every critical action is logged with IP, timestamp, and diff
-
-### 🤖 AI-Powered Features
-- **RAG-based technical chatbot** — powered by Google Gemini with vector similarity search
-- **Document intelligence** — upload PDFs/DOCX, automatic chunking and embedding generation
-- **AI training dashboard** — manage knowledge base ingestion with real-time progress tracking
-- **pgvector integration** — 768-dimensional embeddings for semantic document search
-
-### 👤 Client Portal (B2B)
-- **Self-service dashboard** — clients view their own quotations, projects, and documents
-- **Document center** — download technical datasheets, reports, and certificates
-- **Project tracking** — real-time visibility into project status and milestones
+1. **🌐 Portal Corporativo Público**: Catálogo de **6 categorías metalúrgicas**, **13 servicios especializados**, **6 líneas de equipos industriales** (Italia y Sudáfrica) con especificaciones técnicas en `JSONB`, y formularios de contacto conectados en tiempo real al pipeline del CRM.
+2. **📊 Panel Administrativo CRM / ERP**: Dashboard ejecutivo con KPIs en vivo, tablero **Kanban de Leads** (`NEW` → `CONTACTED` → `EVALUATING` → `PROPOSAL` → `NEGOTIATION` → `WON`/`LOST`), motor de cotizaciones con generación de **PDF multimoneda (`PEN`/`USD`)**, gestión de sucursales, inventario y personal.
+3. **🏢 Portal B2B para Clientes Mineros**: Entorno aislado donde compañías mineras (Antamina, Cerro Verde, Las Bambas, Antapaccay, Minera Andina, etc.) consultan el estado de sus proyectos post-venta, aprueban cotizaciones y descargan certificados o dossieres de calidad.
+4. **🤖 "Ingeniero Virtual" — Chatbot IA con RAG Multimodal**: Asistente técnico impulsado por **Google Gemini (`gemini-2.0-flash`)** y búsqueda vectorial semántica de **768 dimensiones (`gemini-embedding-2` + `pgvector`)**, con panel administrativo de entrenamiento asíncrono para textos, PDFs, documentos Word e imágenes técnicas (OCR).
 
 ---
 
-## 🏗 Architecture
+## 🏗 Arquitectura General del Sistema
 
-```
-┌─────────────────────────────────────────────────────────┐
-│                    NGINX (Reverse Proxy)                 │
-│                    Static Asset Cache                    │
-└─────────────┬───────────────────────────┬───────────────┘
-              │                           │
-    ┌─────────▼─────────┐     ┌───────────▼───────────┐
-    │   React 19 (SPA)  │     │   Express 5 (REST)    │
-    │   Vite · Router 7 │     │   JWT · RBAC · ABAC   │
-    │   Recharts · Lucide│     │   Helmet · CORS       │
-    └─────────┬─────────┘     └───────────┬───────────┘
-              │                           │
-              │              ┌────────────▼────────────┐
-              │              │     PostgreSQL 16        │
-              │              │  ┌──────────────────┐   │
-              │              │  │   pgvector        │   │
-              │              │  │   (768-dim)       │   │
-              │              │  └──────────────────┘   │
-              │              └────────────┬────────────┘
-              │                           │
-              │              ┌────────────▼────────────┐
-              │              │    Google Gemini AI      │
-              │              │  Embeddings + Chat       │
-              │              └─────────────────────────┘
-              │
-    ┌─────────▼─────────┐
-    │   Docker Multi-    │
-    │   Stage Builds     │
-    │   → Cloud Run      │
-    └───────────────────┘
+```mermaid
+flowchart TB
+    subgraph Client["Capa de Presentación (Cliente Web — React 19 + Vite 8)"]
+        PUB["Portal Público Corporativo<br/>(Catálogo, Servicios, Equipos)"]
+        CRM["Panel Admin & CRM/ERP<br/>(Kanban Leads, Cotizaciones, IA)"]
+        B2B["Portal Cliente B2B<br/>(Proyectos, Descargas, Cotizaciones)"]
+        BOT["Widget Flotante<br/>Ingeniero Virtual (DewateringChatbot.jsx)"]
+    end
+
+    subgraph Edge["Capa de Borde y Enrutamiento (Contenedor Frontend)"]
+        NGINX["Nginx Alpine (nginx.conf)<br/>SPA Routing + Caché Estáticos + Reverse Proxy (/api)"]
+    end
+
+    subgraph API["Capa de Aplicación — Backend (Node.js 22 + Express 5)"]
+        SEC["Pipeline de Seguridad<br/>Helmet -> CORS -> JWT Auth -> RBAC -> ABAC"]
+        CTRL["12 Controladores de Negocio<br/>(Auth, Leads, Quotations, Projects, AI, Chat, Audit)"]
+        PDF["Motor PDFKit + Speakeasy MFA (TOTP)"]
+    end
+
+    subgraph Data["Capa de Persistencia Gestionada e Inteligencia Artificial"]
+        PG[("PostgreSQL 16 (Supabase)<br/>13 Tablas Relacionales")]
+        VEC[("Extensión pgvector<br/>Índice IVFFlat (768 dims)")]
+        STR["Supabase Cloud Storage<br/>Bucket: dewatering-documents"]
+        GEM["Google Gemini AI API<br/>gemini-2.0-flash + gemini-embedding-2"]
+    end
+
+    PUB & CRM & B2B & BOT --> NGINX
+    NGINX -->|"Proxy Inverso (/api/*)"| SEC
+    SEC --> CTRL
+    CTRL --> PDF
+    CTRL -->|"Consultas SQL Parametrizadas"| PG
+    CTRL -->|"Similitud Coseno (<=>)"| VEC
+    CTRL -->|"Upload PDF/DOCX/IMG"| STR
+    CTRL -->|"Embeddings + Chat + Vision OCR"| GEM
 ```
 
 ---
 
-## 🛠 Tech Stack
+## 🤖 Arquitectura del Chatbot IA ("Ingeniero Virtual")
 
-### Backend
-| Technology | Purpose |
-|---|---|
-| **Node.js 22** | Runtime environment (ES Modules) |
-| **Express 5** | Web framework with async error handling |
-| **PostgreSQL** | Primary database with JSONB support |
-| **pgvector** | Vector similarity search for RAG |
-| **JWT + bcrypt** | Authentication and password hashing |
-| **Helmet + CORS** | Security headers and cross-origin policies |
-| **Multer** | File upload handling (PDF, DOCX) |
-| **PDFKit + QRCode** | PDF generation with embedded QR codes |
-| **Google Gemini SDK** | AI embeddings and conversational AI |
-| **WebSocket (ws)** | Real-time communication layer |
+El módulo de IA evita respuestas genéricas o alucinaciones mediante una arquitectura **RAG (*Retrieval-Augmented Generation*) Multimodal** dividida en dos flujos independientes: **Inferencia Conversacional** e **Ingestión Asíncrona de Conocimiento**.
 
-### Frontend
-| Technology | Purpose |
-|---|---|
-| **React 19** | UI framework with latest concurrent features |
-| **Vite 8** | Build tool with HMR and optimized bundling |
-| **React Router 7** | Client-side routing with protected routes |
-| **Recharts** | Data visualization for dashboards |
-| **Lucide React** | Icon system (consistent design language) |
-| **SweetAlert2** | Elegant notification and confirmation dialogs |
-| **Axios** | HTTP client with interceptors |
-| **CSS Variables** | Custom design system (no CSS frameworks) |
+### 1. Flujo de Inferencia y Búsqueda Vectorial en Tiempo Real (`POST /api/chat`)
 
-### Infrastructure
-| Technology | Purpose |
-|---|---|
-| **Docker** | Multi-stage containerization |
-| **Nginx** | Static file serving and SPA routing |
-| **Google Cloud Run** | Serverless container deployment |
-| **Google Artifact Registry** | Private container image storage |
+```mermaid
+sequenceDiagram
+    autonumber
+    actor User as Visitante / Ingeniero
+    participant UI as DewateringChatbot.jsx
+    participant ChatCtrl as chatController.js
+    participant GeminiEmb as Gemini (gemini-embedding-2)
+    participant PGVector as PostgreSQL (document_embeddings)
+    participant GeminiLLM as Gemini (gemini-2.0-flash)
+
+    User->>UI: "¿Qué presión máxima soporta el Filtro Prensa FPA-1500?"
+    UI->>ChatCtrl: POST /api/chat { message, history[] }
+    ChatCtrl->>GeminiEmb: embedContent(contents: message, outputDimensionality: 768)
+    GeminiEmb-->>ChatCtrl: Vector numérico [v1, v2, ..., v768]
+    ChatCtrl->>PGVector: SELECT chunk_text, 1 - (embedding <=> $1) AS similarity<br/>ORDER BY embedding <=> $1 LIMIT 3
+    PGVector-->>ChatCtrl: Top 3 fragmentos más cercanos (Índice IVFFlat)
+    Note over ChatCtrl: Filtro Anti-Alucinación:<br/>Descarta fragmentos con similarity <= 0.40 (40%)
+    ChatCtrl->>GeminiLLM: generateContent(contents: history + message)<br/>systemInstruction: BasePrompt + MEMORIA RAG<br/>temperature: 0.3, maxOutputTokens: 2048
+    GeminiLLM-->>ChatCtrl: Respuesta técnica estructurada en Markdown
+    ChatCtrl-->>UI: HTTP 200 { response }
+    UI-->>User: Renderizado rico con ReactMarkdown + remark-gfm
+```
+
+#### Especificaciones Técnicas del Motor RAG
+* **Dimensiones del Espacio Vectorial**: `768` dimensiones generadas por `gemini-embedding-2`.
+* **Índice Vectorial en Base de Datos**: `IVFFlat` con operador de distancia coseno (`vector_cosine_ops`, `lists = 100`).
+* **Umbral de Relevancia Semántica (*Threshold*)**: `similarity > 0.40`. Si la consulta no tiene coincidencia suficiente en la base documental, no contamina el contexto.
+* **Comportamiento Híbrido del Prompt (`temperature: 0.3`)**:
+  * **Ingeniería General**: Autorizado para resolver cálculos matemáticos, dimensionamiento metalúrgico y balances sólido-líquido.
+  * **Datos Corporativos y Equipos**: Restringido **exclusivamente** a los fragmentos recuperados en la `"MEMORIA RAG ENCONTRADA"`.
 
 ---
 
-## 🚀 Getting Started
+### 2. Pipeline de Entrenamiento Multimodal en Segundo Plano (`/ai-training`)
 
-### Prerequisites
+```mermaid
+flowchart LR
+    subgraph AdminUI["Panel /ai-training (AITrainingPage.jsx)"]
+        T1["Tab 1: Texto Libre"]
+        T2["Tab 2: Subir Archivo<br/>(PDF, DOCX, JPG, PNG)"]
+        POLL["Polling cada 5 seg<br/>GET /api/ai/jobs"]
+    end
 
-- [Node.js](https://nodejs.org/) `>= 22.0.0`
-- [PostgreSQL](https://www.postgresql.org/) `>= 15` (or a managed instance)
-- [Docker](https://www.docker.com/) (optional, for containerized deployment)
-- [Google Cloud CLI](https://cloud.google.com/sdk/docs/install) (optional, for cloud deployment)
+    subgraph Ingestion["Motor Asíncrono (aiController.js)"]
+        SUP["1. Backup en Supabase Storage<br/>(dewatering-documents/ai_training)"]
+        JOB["2. Registro en ai_training_jobs<br/>Estado: PENDING -> HTTP 202 Accepted"]
+        EXT["3. Extracción Multimodal (10%)<br/>• PDF: pdf-parse-new<br/>• DOCX: mammoth<br/>• Imagen: gemini-2.0-flash Vision OCR"]
+        CHK["4. Chunking Inteligente (40%)<br/>Fragmentos de ~1,000 caracteres<br/>respetando saltos de párrafo"]
+        EMB["5. Vectorización Secuencial (40-100%)<br/>gemini-embedding-2 (768 dims)<br/>INSERT en document_embeddings"]
+    end
 
-### Installation
-
-**1. Clone the repository**
-```bash
-git clone https://github.com/0xhazroot/dewatering-solutions.git
-cd dewatering-solutions
+    T1 -->|"POST /api/ai/train"| CHK
+    T2 -->|"POST /api/ai/train-file"| SUP
+    SUP --> JOB
+    JOB --> EXT
+    EXT --> CHK
+    CHK --> EMB
+    EMB -.->|"Actualiza progress %"| POLL
 ```
 
-**2. Configure environment variables**
-```bash
-cp backend/.env.example backend/.env
-# Edit backend/.env with your database credentials and API keys
+---
+
+## ☁️ Arquitectura Cloud & DevOps (AWS)
+
+La infraestructura de despliegue en **Amazon Web Services (AWS)** utiliza orquestación de contenedores Docker sobre **Amazon EC2** con una red bridge aislada (`dewatering_solutions_network`), delegando la capa de estado (base de datos vectorial y almacenamiento de objetos) a servicios gestionados en la nube para garantizar alta disponibilidad y persistencia.
+
+```mermaid
+flowchart LR
+    subgraph Internet["Tráfico Externo"]
+        USR["Usuarios / Clientes / Jurado"]
+    end
+
+    subgraph AWS["AWS Cloud — Región us-east-1 (VPC)"]
+        subgraph SG["Security Group (Firewall)"]
+            subgraph EC2["Instancia Amazon EC2 (Ubuntu 24.04 LTS)"]
+                subgraph DockerNet["Red Docker: dewatering_solutions_network (bridge)"]
+                    FE_CONT["Contenedor Frontend<br/>Nginx Alpine (Puerto 80)<br/>• Sirve SPA estática (/dist)<br/>• Reverse Proxy (/api -> :3000)"]
+                    BE_CONT["Contenedor Backend<br/>Node 22 Alpine (Puerto 3000)<br/>• Express 5 API REST<br/>• No expuesto a Internet público"]
+                end
+            end
+        end
+    end
+
+    subgraph ExternalCloud["Servicios Cloud Externos (HTTPS / TLS)"]
+        SUPA_DB[("Supabase PostgreSQL 16<br/>+ pgvector (Puerto 5432 SSL)")]
+        SUPA_ST["Supabase Storage<br/>(Bucket Documentos IA)"]
+        GEMINI["Google Gemini API<br/>(REST / HTTPS)"]
+    end
+
+    USR -->|"HTTP :80 / HTTPS :443"| FE_CONT
+    FE_CONT -->|"Tráfico Interno Docker<br/>http://backend:3000/api"| BE_CONT
+    BE_CONT -->|"Pool PG (SSL)"| SUPA_DB
+    BE_CONT -->|"SDK Storage"| SUPA_ST
+    BE_CONT -->|"API Key Auth"| GEMINI
 ```
 
-**3. Install dependencies**
-```bash
-# Backend
-cd backend && npm install
+### Diseño de Contenedores (Docker Multi-Stage)
 
-# Frontend
-cd ../frontend && npm install
-```
+| Servicio | Imagen Base | Estrategia de Construcción | Puerto Interno | Exposición |
+| :--- | :--- | :--- | :--- | :--- |
+| **`frontend`** | `node:22-alpine` → `nginx:alpine` | **Multi-Stage Build**: La Etapa 1 compila el bundle estático con Vite (`npm ci && npm run build`) y la Etapa 2 copia únicamente `/app/dist` hacia Nginx, reduciendo la imagen final a ~45 MB. | `80` | Público (`80` / `8080`) |
+| **`backend`** | `node:22-alpine` | Imagen ligera de producción ejecutando `npm ci` determinista y levantando Express en `0.0.0.0:3000` con tolerancia a desconexiones temporales de red. | `3000` | Red interna Docker |
 
-**4. Initialize the database**
-```bash
-# Execute the SQL schema against your PostgreSQL instance
-psql -U your_user -d your_database -f database/database.sql
+### Despliegue Rápido con Docker Compose (Local / AWS EC2)
 
-# (Optional) Seed with demo data
-cd backend && node seedProducts.js
-```
-
-**5. Start development servers**
-```bash
-# Terminal 1 — Backend (port 3000)
-cd backend && npm run dev
-
-# Terminal 2 — Frontend (port 5173)
-cd frontend && npm run dev
-```
-
-### Environment Variables
-
-Create a `backend/.env` file with the following structure:
-
+**1. Configurar variables de entorno del Backend (`backend/.env`):**
 ```env
-# Database
-DB_HOST=your_database_host
-DB_PORT=5432
-DB_USER=your_database_user
-DB_PASSWORD=your_secure_password
-DB_NAME=your_database_name
-
-# Authentication
-JWT_SECRET=your_jwt_secret_here
-
-# Server
 PORT=3000
-NODE_ENV=development
+NODE_ENV=production
 
-# AI (Google Gemini)
-GEMINI_API_KEY=your_gemini_api_key
+# Base de Datos PostgreSQL 16 + pgvector (Supabase)
+DB_HOST=tu_host_supabase.supabase.co
+DB_PORT=5432
+DB_USER=postgres
+DB_PASSWORD=tu_password_seguro
+DB_NAME=postgres
+
+# Supabase Storage (Documentos y Entrenamiento IA)
+SUPABASE_URL=https://tu_proyecto.supabase.co
+SUPABASE_SERVICE_ROLE_KEY=tu_service_role_key
+
+# Seguridad Zero-Trust
+JWT_SECRET=tu_secreto_jwt_256_bits
+
+# Inteligencia Artificial (Google Gemini)
+GEMINI_API_KEY=tu_api_key_de_gemini
 ```
 
-> [!WARNING]
-> Never commit your `.env` file to version control. The `.gitignore` is already configured to exclude it.
-
----
-
-## 🐳 Deployment
-
-### Docker (Local)
-
+**2. Construir y levantar los contenedores:**
 ```bash
 cd docker
-docker compose up --build
+docker compose up -d --build
 ```
 
-This starts both the backend (port `3000`) and frontend (port `8080`) containers in an isolated network.
-
-### Google Cloud Run (Production)
-
+**3. Comandos de operación y monitoreo DevOps:**
 ```bash
-# Authenticate
-gcloud auth login
-gcloud config set project your-project-id
+# Verificar estado de los contenedores
+docker compose ps
 
-# Enable required services
-gcloud services enable artifactregistry.googleapis.com run.googleapis.com cloudbuild.googleapis.com
+# Inspeccionar logs en tiempo real del backend y conexión a PostgreSQL
+docker compose logs -f backend
 
-# Build and deploy backend
-gcloud builds submit --tag gcr.io/your-project-id/dewatering-backend ./backend
-gcloud run deploy dewatering-backend --image gcr.io/your-project-id/dewatering-backend --platform managed --region us-central1 --allow-unauthenticated
-
-# Build and deploy frontend
-gcloud builds submit --tag gcr.io/your-project-id/dewatering-frontend ./frontend
-gcloud run deploy dewatering-frontend --image gcr.io/your-project-id/dewatering-frontend --platform managed --region us-central1 --allow-unauthenticated
+# Reiniciar un servicio sin tiempo de inactividad prolongado
+docker compose restart backend
 ```
 
 ---
 
-## 📁 Project Structure
+## 🔒 Seguridad Zero-Trust y Auditoría
 
+El sistema implementa un modelo de **Defensa en Profundidad** a través de 5 anillos de seguridad:
+
+```mermaid
+flowchart LR
+    REQ["Petición HTTP"] --> HLM["1. Helmet & CORS<br/>Cabeceras Seguras"]
+    HLM --> JWT["2. authMiddleware.js<br/>Verificación JWT (HS256)"]
+    JWT --> MFA["3. mfaController.js<br/>2FA TOTP (RFC 6238)"]
+    MFA --> RBAC["4. rbacMiddleware.js<br/>Rol: SUPER_ADMIN | OPERATOR | CLIENT"]
+    RBAC --> ABAC["5. abacMiddleware.js<br/>Atributos: Sede + Campos Permitidos"]
+    ABAC --> AUD["6. auditService.js<br/>Registro Inmutable (IP + JSON Diff)"]
 ```
-dewatering-solutions/
+
+* **Autenticación y Cifrado**: Contraseñas hasheadas con `bcrypt` (**12 rondas de sal**) y bloqueo automático de cuenta por **15 minutos** tras **5 intentos fallidos**.
+* **MFA / 2FA (TOTP)**: Enrolamiento mediante código QR compatible con **Google Authenticator** (`speakeasy` + `qrcode`).
+* **RBAC Simplificado**: 3 roles estrictos (`SUPER_ADMIN`, `OPERATOR`, `CLIENT`).
+* **ABAC (Control Basado en Atributos)**:
+  * `hasStoreJurisdiction`: Valida que un operador solo modifique recursos de su sucursal asignada.
+  * `denyAuditorWrites`: Garantiza permisos de solo lectura para clientes externos.
+  * `restrictEmployeeFields`: Filtra a nivel de propiedad qué columnas puede actualizar un operador.
+* **Audit Trail Inmutable (`audit_logs`)**: Captura `user_id`, `action`, `entity`, `ip_address`, `old_data` (`JSONB`) y `new_data` (`JSONB`).
+
+---
+
+## 🧪 Pruebas, Health Checks y QA
+
+### 1. Verificación de Salud del Servicio (Health Check)
+El backend expone un endpoint de diagnóstico continuo para balanceadores de carga y monitoreo en AWS:
+```bash
+curl -i http://localhost:3000/api/health
+```
+Respuesta esperada (`HTTP 200 OK`):
+```json
+{
+  "status": "ok",
+  "message": "Dewatering Solutions API is running.",
+  "version": "1.0.0",
+  "endpoints": [
+    "/api/auth", "/api/users", "/api/leads", "/api/quotations",
+    "/api/services", "/api/products", "/api/projects", "/api/documents", "/api/audit"
+  ]
+}
+```
+
+### 2. Scripts de Semilla (Seeding) y Pruebas de Base de Datos
+Ubicados en `backend/scripts/migrations/`:
+```bash
+# Poblar catálogo completo (6 categorías, 13 servicios, 6 equipos, leads y usuarios demo)
+cd backend
+node scripts/migrations/seed_dewatering.js
+```
+
+### 3. Matriz de Credenciales para Pruebas QA / Demo
+
+| Rol | Usuario | Contraseña | Alcance de Prueba |
+| :--- | :--- | :--- | :--- |
+| **`SUPER_ADMIN`** | `admin@dewatering.com` | `Admin@2026` | Acceso total: Dashboard, CRM Kanban, Cotizaciones PDF, Entrenamiento IA (`/ai-training`), Personal y Auditoría (`/audit`). |
+| **`CLIENT` (B2B)** | `contacto@minera-andina.com` | `Client@2026` | Portal B2B Minera Andina: visualización aislada de proyectos, cotizaciones y descarga de fichas técnicas. |
+| **`CLIENT` (B2B)** | `gerencia@antapaccay.com` | `Client@2026` | Portal B2B Antapaccay: validación de aislamiento multi-cliente (ABAC). |
+
+---
+
+## 🗄 Modelo de Base de Datos (13 Tablas)
+
+Definido íntegramente en [`database/database.sql`](database/database.sql):
+
+1. **`users`**: Credenciales, perfil corporativo, rol (`SUPER_ADMIN`, `OPERATOR`, `CLIENT`) y estado MFA.
+2. **`service_categories`**: Las 6 divisiones técnicas (*Filtración, Espesamiento, Flotación, Lixiviación, Pilotaje, Montaje*).
+3. **`services`**: Los 13 ensayos metalúrgicos y servicios de campo.
+4. **`products`**: Equipos industriales con especificaciones técnicas dinámicas en `JSONB`.
+5. **`leads`**: Prospectos comerciales captados en la web y gestionados en el pipeline Kanban.
+6. **`quotations`**: Cotizaciones versionadas con ítems en `JSONB`, impuestos y soporte multimoneda (`PEN`/`USD`).
+7. **`projects`**: Seguimiento de ejecución de proyectos post-venta.
+8. **`documents`**: Fichas técnicas, certificados ISO y documentos base del conocimiento RAG (`RAG_KNOWLEDGE`).
+9. **`chatbot_conversations`**: Historial de interacciones del asistente virtual y fuentes utilizadas.
+10. **`audit_logs`**: Bitácora forense de cambios con instantáneas `old_data` y `new_data`.
+11. **`document_embeddings`**: Almacén vectorial `vector(768)` indexado con `IVFFlat` para búsqueda por similitud coseno.
+12. **`stores`**: Sucursales operativas para reglas de jurisdicción geográfica ABAC.
+13. **`ai_training_jobs`**: Cola asíncrona de procesamiento de archivos de entrenamiento IA (`PENDING` → `EXTRACTING` → `EMBEDDING` → `COMPLETED` / `FAILED`).
+
+---
+
+## 📁 Estructura del Proyecto
+
+```text
+dewatering-platform/
 ├── backend/
 │   ├── src/
-│   │   ├── app.js                 # Express application setup
-│   │   ├── server.js              # Server entry point
-│   │   ├── config/                # Database and service configuration
-│   │   ├── controllers/           # Request handlers (12 controllers)
-│   │   │   ├── aiController.js    # RAG chatbot & document intelligence
-│   │   │   ├── authController.js  # Authentication & registration
-│   │   │   ├── leadController.js  # CRM lead management
-│   │   │   ├── quotationController.js
-│   │   │   └── ...
-│   │   ├── middlewares/           # Auth, RBAC, ABAC, error handling
-│   │   ├── models/                # Database access layer (8 models)
-│   │   ├── routes/                # API route definitions (11 routers)
-│   │   ├── services/              # Business logic (auth, audit)
-│   │   └── utils/                 # Shared utilities (MFA, helpers)
-│   ├── Dockerfile                 # Production container image
+│   │   ├── app.js                  # Configuración de Express 5, CORS, Helmet y rutas
+│   │   ├── server.js               # Inicialización resiliente del servidor y pool PG
+│   │   ├── config/
+│   │   │   ├── db.js               # Pool PostgreSQL (max: 20 conexiones, SSL)
+│   │   │   └── supabase.js         # Cliente Supabase Storage para ingesta de archivos
+│   │   ├── controllers/            # 12 controladores (ai, chat, auth, mfa, quotation, lead...)
+│   │   ├── middlewares/            # authMiddleware, rbacMiddleware, abacMiddleware
+│   │   ├── models/                 # 8 modelos con consultas SQL parametrizadas
+│   │   ├── routes/                 # 11 routers RESTful (/api/*)
+│   │   ├── services/               # authService.js y auditService.js
+│   │   └── utils/                  # Utilidades criptográficas y TOTP (mfaUtils.js)
+│   ├── scripts/migrations/         # Scripts de migración y seed (seed_dewatering.js)
+│   ├── Dockerfile                  # Imagen de producción Node 22 Alpine
 │   └── package.json
 │
 ├── frontend/
 │   ├── src/
-│   │   ├── App.jsx                # Root component with routing
-│   │   ├── main.jsx               # Application entry point
-│   │   ├── index.css              # Design system (CSS custom properties)
-│   │   ├── components/            # Reusable UI components
-│   │   │   ├── DashboardLayout.jsx
-│   │   │   ├── DewateringChatbot.jsx
-│   │   │   └── ...
-│   │   ├── context/               # React context (Auth state)
-│   │   ├── pages/                 # Page components (22 pages)
-│   │   │   ├── public/            # Landing, services, products, about
-│   │   │   ├── crm/               # Leads, quotations, requests
-│   │   │   ├── client/            # Client portal (B2B)
-│   │   │   ├── DashboardPage.jsx
-│   │   │   ├── LoginPage.jsx
-│   │   │   └── ...
-│   │   └── services/              # API client layer
-│   ├── Dockerfile                 # Multi-stage build (Node → Nginx)
-│   ├── nginx.conf                 # SPA-ready Nginx configuration
+│   │   ├── App.jsx                 # Enrutador React Router 7 + ProtectedRoute RBAC
+│   │   ├── components/
+│   │   │   ├── DashboardLayout.jsx # Layout administrativo con sidebar dinámico
+│   │   │   ├── DewateringChatbot.jsx # Widget flotante del Ingeniero Virtual (Markdown)
+│   │   │   ├── DewateringMascot.jsx  # Mascota interactiva en Login
+│   │   │   └── public/PublicLayout.jsx # Layout corporativo público
+│   │   ├── context/AuthContext.jsx # Estado global de sesión JWT y permisos
+│   │   ├── pages/                  # 25 vistas (public/, crm/, client/, AITrainingPage...)
+│   │   └── services/api.js         # Instancia Axios con interceptores JWT y 401
+│   ├── Dockerfile                  # Multi-stage build (Node 22 Builder -> Nginx Alpine)
+│   ├── nginx.conf                  # Configuración SPA + caché + Reverse Proxy
 │   └── package.json
 │
 ├── database/
-│   └── database.sql               # Complete schema (13 tables + pgvector)
+│   └── database.sql                # Esquema completo (13 tablas + extensión pgvector)
 │
 ├── docker/
-│   ├── docker-compose.yml         # Production orchestration
-│   └── docker-compose.dev.yml     # Development orchestration
+│   ├── docker-compose.yml          # Orquestación de producción (Frontend + Backend)
+│   └── docker-compose.dev.yml      # Orquestación de entorno de desarrollo
 │
 └── docs/
-    ├── API_DOCUMENTATION.md       # REST API reference
-    └── PROJECT_CONTEXT.md         # Architecture decisions & context
+    ├── DOCUMENTACION_EXPO_Y_AWS.md # Guía técnica detallada para exposición y despliegue AWS
+    ├── API_DOCUMENTATION.md        # Referencia de endpoints REST
+    └── PROJECT_CONTEXT.md          # Contexto de negocio e identidad visual
 ```
 
 ---
 
-## 📡 API Endpoints
+## 📄 Licencia
 
-| Method | Endpoint | Description | Auth |
-|--------|----------|-------------|------|
-| `POST` | `/api/auth/register` | User registration | Public |
-| `POST` | `/api/auth/login` | Authentication | Public |
-| `GET` | `/api/leads` | List all leads | RBAC |
-| `POST` | `/api/leads` | Create a new lead | Public |
-| `GET` | `/api/quotations` | List quotations | RBAC |
-| `POST` | `/api/quotations` | Create quotation | RBAC |
-| `GET` | `/api/products` | List products | Public |
-| `GET` | `/api/services` | List services | Public |
-| `GET` | `/api/projects` | List projects | RBAC |
-| `POST` | `/api/ai/chat` | AI chatbot query | Auth |
-| `POST` | `/api/ai/train` | Ingest document for RAG | RBAC |
-| `GET` | `/api/audit` | Audit trail logs | Admin |
-
-> For the complete API reference, see [`docs/API_DOCUMENTATION.md`](docs/API_DOCUMENTATION.md).
-
----
-
-## 🔒 Security
-
-This platform implements a **defense-in-depth** security model:
-
-- **Authentication:** JWT tokens with bcrypt password hashing (12 salt rounds)
-- **MFA:** TOTP-based two-factor authentication (RFC 6238)
-- **Authorization:** Dual-layer RBAC + ABAC middleware pipeline
-- **HTTP Security:** Helmet.js security headers, CORS policy enforcement
-- **Audit:** Immutable audit log capturing all mutations with user context
-- **Input Validation:** Server-side validation on all endpoints
-- **Secrets Management:** Environment-based configuration, no hardcoded credentials
-
----
-
-## 🤝 Contributing
-
-This is a proprietary project developed as a **university pre-thesis** in partnership with a real-world industrial client. Contributions are not currently accepted from external collaborators.
-
----
-
-## 📄 License
-
-This project is **proprietary software**. All rights reserved.  
-Unauthorized copying, modification, or distribution of this software is strictly prohibited.
-
----
+Este proyecto es **software propietario** desarrollado como proyecto de pre-tesis universitaria e implementación empresarial para **Dewatering Solutions**. Todos los derechos reservados.
 
 <div align="center">
 
-**Built with ❤️ for the industrial sector**
-
-*Dewatering Solutions — Solid-Liquid Separation Specialists*
+**Desarrollado para la industria minera y metalúrgica del Perú**  
+*Dewatering Solutions — Especialistas en Separación Sólido-Líquido*
 
 </div>

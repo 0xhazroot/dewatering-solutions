@@ -238,11 +238,20 @@ const DashboardPage = () => {
         </div>
         <div className={`card ${loaded ? 'animate-fade-in' : ''}`} style={{ animationDelay: '0.4s' }}>
           <div className="card-header"><h3 style={{ fontSize: '1rem' }}>Stock por Sucursal</h3><p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginTop: '4px' }}>{isLive ? 'Distribución geográfica ABAC' : 'Conecte la BD para datos reales'}</p></div>
-          <div className="card-body" style={{ height: 310 }}>
+          <div className="card-body" style={{ height: 310, padding: '1rem 0' }}>
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={stockByStoreData} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color)" vertical={false}/><XAxis dataKey="sucursal" tick={{ fill: 'var(--text-secondary)', fontSize: 12 }} axisLine={false} tickLine={false}/><YAxis tick={{ fill: 'var(--text-secondary)', fontSize: 12 }} axisLine={false} tickLine={false}/>
-                <RechartsTooltip content={<CustomTooltip/>}/><Bar name="Unidades" dataKey="stock" fill="var(--accent-primary)" radius={[8, 8, 0, 0]} animationDuration={1200}/>
+              <BarChart data={stockByStoreData} margin={{ top: 10, right: 20, left: -10, bottom: 0 }} barSize={45}>
+                <defs>
+                  <linearGradient id="colorStock" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#3b82f6" stopOpacity={1}/>
+                    <stop offset="100%" stopColor="#1d4ed8" stopOpacity={0.7}/>
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color)" vertical={false} opacity={0.5}/>
+                <XAxis dataKey="sucursal" tick={{ fill: 'var(--text-secondary)', fontSize: 12, fontWeight: 500 }} axisLine={false} tickLine={false} dy={10}/>
+                <YAxis tick={{ fill: 'var(--text-secondary)', fontSize: 12 }} axisLine={false} tickLine={false} dx={-10}/>
+                <RechartsTooltip content={<CustomTooltip/>} cursor={{ fill: 'rgba(59, 130, 246, 0.05)' }}/>
+                <Bar name="Unidades" dataKey="stock" fill="url(#colorStock)" radius={[6, 6, 0, 0]} animationDuration={1200} />
               </BarChart>
             </ResponsiveContainer>
           </div>

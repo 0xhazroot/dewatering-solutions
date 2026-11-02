@@ -1,6 +1,7 @@
 import quotationModel from '../models/quotationModel.js';
 import auditService from '../services/auditService.js';
 import PDFDocument from 'pdfkit';
+import QRCode from 'qrcode';
 
 export const create = async (req, res, next) => {
   try {
@@ -76,46 +77,89 @@ export const downloadPDF = async (req, res, next) => {
     const doc = new PDFDocument({ margin: 50 });
     doc.pipe(res);
 
-    doc.fontSize(24).fillColor('#2563eb').text('Dewatering Solutions', { align: 'right' });
-    doc.fontSize(10).fillColor('#64748b').text('Av. Industrial 123, Lima, Perú', { align: 'right' });
-    doc.text('contacto@dewatering.com | +51 987 654 321', { align: 'right' });
-    
-    doc.moveDown(2);
-    
-    doc.fontSize(20).fillColor('#0f172a').text('COTIZACIÓN OFICIAL', { align: 'left' });
-    doc.moveDown(1);
-    doc.fontSize(12).text(`N° de Documento: ${quotation.quotation_number}`);
-    doc.text(`Fecha de Emisión: ${new Date(quotation.created_at).toLocaleDateString()}`);
-    doc.text(`Válida hasta: ${new Date(quotation.valid_until).toLocaleDateString()}`);
-    doc.text(`Estado: ${quotation.status}`);
-    
-    doc.moveDown(2);
-    
-    doc.fontSize(14).fillColor('#2563eb').text('1. Detalle de la Propuesta Técnica', { underline: true });
+    // Header Corporativo
+    doc.fontSize(22).fillColor('#1d4ed8').text('DEWATERING SOLUTIONS S.A.C.', { align: 'right' });
+    doc.fontSize(9).fillColor('#64748b').text('Certificación Internacional ISO 9001 | Ingeniería Sólido-Líquido', { align: 'right' });
+    doc.text('Av. Industrial 123, Lima, Perú | RUC: 20601234567', { align: 'right' });
+    doc.text('contacto@dewatering.com | WhatsApp Corporativo: +51 987 654 321', { align: 'right' });
+
+    doc.moveDown(1.5);
+
+    // Título y Metadatos
+    doc.fontSize(18).fillColor('#0f172a').text('COTIZACIÓN TÉCNICO-COMERCIAL OFICIAL', { align: 'left' });
     doc.moveDown(0.5);
-    doc.fontSize(12).fillColor('#0f172a').text(`Título: ${quotation.title}`, { bold: true });
-    doc.moveDown(0.5);
-    doc.fontSize(11).fillColor('#334155').text(quotation.description || 'Suministro de equipos de separación sólido-líquido.');
-    
-    doc.moveDown(2);
-    
-    doc.fontSize(14).fillColor('#2563eb').text('2. Resumen Económico', { underline: true });
-    doc.moveDown(1);
-    
-    doc.rect(50, doc.y, 500, 20).fill('#f1f5f9').stroke();
-    doc.fillColor('#0f172a').fontSize(11).text('Descripción', 60, doc.y - 15);
-    doc.text('Monto Total', 450, doc.y - 15);
-    
-    doc.moveDown(1);
-    doc.text(quotation.title, 60, doc.y);
-    const currencySymbol = quotation.currency === 'PEN' ? 'S/.' : '$';
-    doc.fillColor('#10b981').text(`${currencySymbol} ${Number(quotation.total).toLocaleString('en-US', { minimumFractionDigits: 2 })} ${quotation.currency}`, 450, doc.y);
-    
-    doc.moveDown(4);
-    
-    doc.fontSize(10).fillColor('#64748b').text('_________________________________', { align: 'center' });
-    doc.text('Aprobado por: Gerencia General', { align: 'center' });
-    doc.text('Dewatering Solutions', { align: 'center' });
+    doc.fontSize(10.5).fillColor('#1e293b');
+    doc.text(`N° de Documento: ${quotation.quotation_number}`);
+    doc.text(`Cliente / Empresa: ${quotation.lead_company || quotation.lead_name || 'Cliente Corporativo Minero'}`);
+    doc.text(`Fecha de Emisión: ${new Date(quotation.created_at).toLocaleDateString('es-PE')}`);
+    doc.text(`Válida hasta: ${quotation.valid_until ? new Date(quotation.valid_until).toLocaleDateString('es-PE') : '15 días calendario'}`);
+    doc.text(`Estado de Aprobación: ${quotation.status}`);
+
+    doc.moveDown(1.5);
+
+    // 1. Propuesta Técnica
+    doc.fontSize(13).fillColor('#1d4ed8').text('1. Alcance y Especificación Técnica', { underline: true });
+    doc.moveDown(0.4);
+    doc.fontSize(11.5).fillColor('#0f172a').text(`Proyecto / Suministro: ${quotation.title}`);
+    doc.moveDown(0.4);
+    doc.fontSize(10).fillColor('#334155').text(quotation.description || 'Suministro de equipamiento e ingeniería especializada para separación sólido-líquido con garantía post-venta certificada.');
+
+    doc.moveDown(1.5);
+
+    // 2. Resumen Económico
+    doc.fontSize(13).fillColor('#1d4ed8').text('2. Desglose Económico', { underline: true });
+    doc.moveDown(0.6);
+
+    const tableTop = doc.y;
+    doc.rect(50, tableTop, 500, 22).fill('#e2e8f0');
+    doc.fillColor('#0f172a').fontSize(10).text('Ítem / Descripción Técnica', 60, tableTop + 6);
+    doc.text('Importe', 440, tableTop + 6);
+
+    const currencySymbol = quotation.currency === 'PEN' ? 'S/.' : 'USD $';
+    const totalNum = Number(quotation.total || 0);
+    const subtotalNum = Number(quotation.subtotal || (totalNum / 1.18));
+    const taxNum = Number(quotation.tax || (totalNum - subtotalNum));
+
+    let rowY = tableTop + 30;
+    doc.fillColor('#1e293b').fontSize(10).text(quotation.title, 60, rowY, { width: 360 });
+    doc.text(`${currencySymbol} ${subtotalNum.toLocaleString('en-US', { minimumFractionDigits: 2 })}`, 430, rowY);
+
+    rowY += 28;
+    doc.moveTo(50, rowY).lineTo(550, rowY).strokeColor('#cbd5e1').stroke();
+    rowY += 8;
+    doc.fontSize(10).fillColor('#475569').text('Subtotal (Valor Venta):', 310, rowY);
+    doc.text(`${currencySymbol} ${subtotalNum.toLocaleString('en-US', { minimumFractionDigits: 2 })}`, 430, rowY);
+
+    rowY += 18;
+    doc.text('I.G.V. (18%):', 310, rowY);
+    doc.text(`${currencySymbol} ${taxNum.toLocaleString('en-US', { minimumFractionDigits: 2 })}`, 430, rowY);
+
+    rowY += 20;
+    doc.fontSize(11.5).fillColor('#059669').text('TOTAL INVERSIÓN:', 310, rowY);
+    doc.text(`${currencySymbol} ${totalNum.toLocaleString('en-US', { minimumFractionDigits: 2 })}`, 430, rowY);
+
+    // 3. Código QR de Verificación Digital y Trazabilidad
+    const qrY = rowY + 45;
+    try {
+      const qrPayload = JSON.stringify({
+        empresa: 'Dewatering Solutions SAC',
+        cotizacion: quotation.quotation_number,
+        cliente: quotation.lead_company || quotation.lead_name || 'Corporativo',
+        total: `${quotation.currency || 'USD'} ${totalNum.toFixed(2)}`,
+        estado: quotation.status,
+        verificacion: `http://localhost:5173/admin/cotizaciones?verify=${quotation.quotation_number}`
+      });
+      const qrBuffer = await QRCode.toBuffer(qrPayload, { width: 100, margin: 1 });
+      doc.image(qrBuffer, 50, qrY, { width: 85 });
+      doc.fontSize(8.5).fillColor('#475569').text('Sello de Verificación Digital QR', 145, qrY + 12);
+      doc.text(`Código Único: ${quotation.quotation_number}`, 145, qrY + 25);
+      doc.text('Escanee el código QR para validar autenticidad,', 145, qrY + 38);
+      doc.text('vigencia y trazabilidad en el Portal Dewatering.', 145, qrY + 50);
+    } catch (_) {}
+
+    doc.fontSize(9.5).fillColor('#64748b').text('_________________________________', 350, qrY + 35, { width: 190, align: 'center' });
+    doc.text('Gerencia de Ingeniería y Proyectos', 350, qrY + 50, { width: 190, align: 'center' });
+    doc.text('Dewatering Solutions S.A.C.', 350, qrY + 63, { width: 190, align: 'center' });
 
     doc.end();
   } catch (error) { next(error); }

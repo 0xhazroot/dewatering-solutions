@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import DashboardLayout from '../../components/DashboardLayout.jsx';
 import api from '../../services/api.js';
-import { Mail, Phone, Building, Briefcase, Clock, Search, Filter, MoreVertical, Calendar } from 'lucide-react';
+import Swal from 'sweetalert2';
+import { Mail, Phone, Building, Briefcase, Clock, Search, Filter, MoreVertical, FileText, MessageCircle, Sparkles } from 'lucide-react';
 
 const COLUMNS = [
   { id: 'NEW', label: 'Nuevo', color: '#3b82f6', bg: 'rgba(59,130,246,0.1)' },
@@ -10,6 +11,15 @@ const COLUMNS = [
   { id: 'PROPOSAL', label: 'Propuesta', color: '#06b6d4', bg: 'rgba(6,182,212,0.1)' },
   { id: 'WON', label: 'Ganado', color: '#10b981', bg: 'rgba(16,185,129,0.1)' },
 ];
+
+const buildLeadWhatsAppUrl = (lead) => {
+  const rawPhone = (lead?.contact_phone || '51987654321').replace(/[^0-9]/g, '');
+  const phone = rawPhone.length === 9 ? `51${rawPhone}` : rawPhone || '51987654321';
+  const msg = encodeURIComponent(
+    `Hola *${lead?.contact_name || 'Estimado(a)'}* (${lead?.company_name || 'Corporación'}), le saluda el equipo de Ingeniería de *Dewatering Solutions (ISO 9001)* respecto a su requerimiento de *${lead?.service_interest || 'Separación Sólido-Líquido'}*. ¿Podemos coordinar los detalles técnicos por este medio?`
+  );
+  return `https://wa.me/${phone}?text=${msg}`;
+};
 
 const LeadsPage = () => {
   const [leads, setLeads] = useState([]);
@@ -52,28 +62,27 @@ const LeadsPage = () => {
 
     const leadToMove = leads.find(l => l.id.toString() === leadIdStr);
     if (leadToMove && leadToMove.status !== targetStatus) {
-      // Optimizacion UI (Update local state instantly)
       setLeads(prev => prev.map(l => l.id.toString() === leadIdStr ? { ...l, status: targetStatus } : l));
-      
       try {
         await api.put(`/leads/${leadIdStr}`, { status: targetStatus });
       } catch (error) {
         console.error('Error updating lead status:', error);
-        // Revertir si falla
         fetchLeads();
       }
     }
   };
 
-  const filteredLeads = leads.filter(l => 
-    (l.contact_name?.toLowerCase().includes(search.toLowerCase()) || 
-     l.company_name?.toLowerCase().includes(search.toLowerCase()))
+  const filteredLeads = leads.filter(l =>
+    l.contact_name?.toLowerCase().includes(search.toLowerCase()) ||
+    l.company_name?.toLowerCase().includes(search.toLowerCase())
   );
 
   const handleSendQuote = async () => {
     if (!quoteTitle || !quoteAmount) return Swal.fire('Error', 'Ingrese título y monto', 'error');
     setIsQuoting(true);
     const amountVal = parseFloat(quoteAmount);
+    const taxVal = +(amountVal * 0.18).toFixed(2);
+    const totalVal = +(amountVal + taxVal).toFixed(2);
     try {
       await api.post('/quotations', {
         title: quoteTitle,
@@ -81,11 +90,11 @@ const LeadsPage = () => {
         lead_id: selectedLead.id,
         items: [{ description: quoteTitle, quantity: 1, unit_price: amountVal, subtotal: amountVal }],
         subtotal: amountVal,
-        tax: 0,
-        total: amountVal,
+        tax: taxVal,
+        total: totalVal,
         currency: 'USD',
       });
-      Swal.fire('¡Éxito!', 'Cotización enviada. El cliente la verá en su portal.', 'success');
+      Swal.fire('¡Éxito!', 'Cotización oficial generada (con código QR). El cliente la verá en su portal.', 'success');
       setShowQuoteForm(false);
       setQuoteTitle('');
       setQuoteAmount('');
@@ -98,15 +107,15 @@ const LeadsPage = () => {
   };
 
   return (
-    <DashboardLayout title="Leads (Prospectos)" subtitle="Gestión comercial y pipeline">
+    <DashboardLayout title="Leads (Prospectos)" subtitle="Gestión comercial omnicanal (Web, Agente IA y WhatsApp Business)">
       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1.5rem', gap: '1rem', flexWrap: 'wrap' }}>
         <div style={{ display: 'flex', gap: '0.5rem', flex: 1, minWidth: '300px' }}>
           <div style={{ position: 'relative', flex: 1 }}>
             <Search size={18} style={{ position: 'absolute', left: 12, top: 10, color: 'var(--text-secondary)' }} />
-            <input 
-              type="text" 
-              className="input-control" 
-              placeholder="Buscar por empresa o contacto..." 
+            <input
+              type="text"
+              className="input-control"
+              placeholder="Buscar por empresa o contacto..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               style={{ paddingLeft: '2.5rem', margin: 0 }}
@@ -120,20 +129,20 @@ const LeadsPage = () => {
       {loading ? (
         <div style={{ textAlign: 'center', padding: '3rem', color: 'var(--text-secondary)' }}>Cargando pipeline...</div>
       ) : (
-        <div style={{ 
+        <div style={{
           display: 'flex', gap: '1.5rem', overflowX: 'auto', paddingBottom: '1rem',
           minHeight: 'calc(100vh - 250px)'
         }}>
           {COLUMNS.map(column => {
-            const columnLeads = filteredLeads.filter(l => l.status === column.id);
+            const columnLeads = filteredLeads.filter(l => (l.status === 'QUOTED' ? 'PROPOSAL' : l.status) === column.id);
             return (
-              <div 
+              <div
                 key={column.id}
                 onDragOver={handleDragOver}
                 onDrop={(e) => handleDrop(e, column.id)}
-                style={{ 
-                  flex: '0 0 320px', 
-                  backgroundColor: 'var(--bg-secondary)', 
+                style={{
+                  flex: '0 0 320px',
+                  backgroundColor: 'var(--bg-secondary)',
                   borderRadius: 'var(--radius-lg)',
                   border: '1px solid var(--border-color)',
                   display: 'flex', flexDirection: 'column',
@@ -141,7 +150,7 @@ const LeadsPage = () => {
                 }}
               >
                 {/* Column Header */}
-                <div style={{ 
+                <div style={{
                   padding: '1.25rem', borderBottom: '1px solid var(--border-color)',
                   display: 'flex', justifyContent: 'space-between', alignItems: 'center'
                 }}>
@@ -149,8 +158,8 @@ const LeadsPage = () => {
                     <div style={{ width: 12, height: 12, borderRadius: '50%', backgroundColor: column.color }}></div>
                     <h3 style={{ fontSize: '1rem', fontWeight: 700 }}>{column.label}</h3>
                   </div>
-                  <span style={{ 
-                    backgroundColor: 'var(--bg-primary)', padding: '0.2rem 0.6rem', 
+                  <span style={{
+                    backgroundColor: 'var(--bg-primary)', padding: '0.2rem 0.6rem',
                     borderRadius: '100px', fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-secondary)'
                   }}>
                     {columnLeads.length}
@@ -160,36 +169,65 @@ const LeadsPage = () => {
                 {/* Column Body (Draggable items) */}
                 <div style={{ padding: '1rem', overflowY: 'auto', flex: 1, display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                   {columnLeads.map(lead => (
-                    <div 
+                    <div
                       key={lead.id}
                       draggable
                       onDragStart={(e) => handleDragStart(e, lead.id)}
                       onClick={() => setSelectedLead(lead)}
-                      style={{ 
-                        backgroundColor: 'var(--bg-primary)', 
+                      style={{
+                        backgroundColor: 'var(--bg-primary)',
                         padding: '1.25rem', borderRadius: 'var(--radius-md)',
-                        border: '1px solid var(--border-color)',
+                        border: lead.source === 'AI_AGENT' ? '1px solid var(--accent-primary)' : '1px solid var(--border-color)',
                         cursor: 'grab', transition: 'transform 0.2s, box-shadow 0.2s',
                       }}
                       onMouseOver={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = 'var(--shadow-md)'; }}
                       onMouseOut={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'none'; }}
                     >
-                      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
-                        <span style={{ fontSize: '0.75rem', fontWeight: 600, color: column.color, backgroundColor: column.bg, padding: '0.2rem 0.5rem', borderRadius: '4px' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem', gap: '6px', flexWrap: 'wrap' }}>
+                        <span style={{ fontSize: '0.73rem', fontWeight: 600, color: column.color, backgroundColor: column.bg, padding: '0.2rem 0.5rem', borderRadius: '4px' }}>
                           {lead.service_interest || 'General'}
                         </span>
-                        <MoreVertical size={16} color="var(--text-secondary)" />
+                        {lead.source === 'AI_AGENT' ? (
+                          <span style={{ fontSize: '0.68rem', fontWeight: 700, color: '#fff', backgroundColor: 'var(--accent-primary)', padding: '0.18rem 0.45rem', borderRadius: '99px', display: 'inline-flex', alignItems: 'center', gap: '3px' }}>
+                            <Sparkles size={11} /> Agente IA
+                          </span>
+                        ) : (
+                          <MoreVertical size={16} color="var(--text-secondary)" />
+                        )}
                       </div>
                       <h4 style={{ fontSize: '1rem', marginBottom: '0.25rem', color: 'var(--text-primary)' }}>{lead.company_name || 'Empresa Sin Nombre'}</h4>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--text-secondary)', fontSize: '0.85rem', marginBottom: '0.75rem' }}>
                         <Briefcase size={14} /> {lead.contact_name}
                       </div>
-                      
-                      <div style={{ borderTop: '1px dashed var(--border-color)', margin: '0.75rem 0', paddingTop: '0.75rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+
+                      <div style={{ borderTop: '1px dashed var(--border-color)', margin: '0.75rem 0 0 0', paddingTop: '0.75rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                         <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', display: 'flex', alignItems: 'center', gap: '4px' }}>
                           <Clock size={12} /> {new Date(lead.created_at).toLocaleDateString('es-PE')}
                         </div>
-                        {lead.priority === 'URGENT' && <span style={{ width: 8, height: 8, borderRadius: '50%', backgroundColor: 'var(--danger)' }} title="Prioridad Alta"></span>}
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <a
+                            href={buildLeadWhatsAppUrl(lead)}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            onClick={e => e.stopPropagation()}
+                            title="Contactar por WhatsApp Business"
+                            style={{
+                              backgroundColor: '#25D366',
+                              color: '#fff',
+                              borderRadius: '6px',
+                              padding: '3px 7px',
+                              fontSize: '0.7rem',
+                              fontWeight: 600,
+                              textDecoration: 'none',
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: '3px'
+                            }}
+                          >
+                            <MessageCircle size={12} /> WA
+                          </a>
+                          {lead.priority === 'URGENT' && <span style={{ width: 8, height: 8, borderRadius: '50%', backgroundColor: 'var(--danger)' }} title="Prioridad Alta"></span>}
+                        </div>
                       </div>
                     </div>
                   ))}
@@ -213,7 +251,7 @@ const LeadsPage = () => {
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           backdropFilter: 'blur(4px)', padding: '1rem'
         }}>
-          <div className="card animate-fade-in" style={{ width: '100%', maxWidth: '600px', maxHeight: '90vh', overflowY: 'auto' }}>
+          <div className="card animate-fade-in" style={{ width: '100%', maxWidth: '620px', maxHeight: '90vh', overflowY: 'auto' }}>
             <div className="card-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <h3 style={{ fontSize: '1.25rem' }}>Detalles del Prospecto</h3>
               <button onClick={() => { setSelectedLead(null); setShowQuoteForm(false); }} style={{ background: 'none', border: 'none', fontSize: '1.5rem', cursor: 'pointer', color: 'var(--text-secondary)' }}>&times;</button>
@@ -241,9 +279,15 @@ const LeadsPage = () => {
                 </div>
               </div>
 
-              <div style={{ marginBottom: '1.5rem' }}>
-                <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginBottom: '0.2rem' }}>Servicio de Interés</p>
-                <span className="badge badge-success">{selectedLead.service_interest || 'General'}</span>
+              <div style={{ marginBottom: '1.5rem', display: 'flex', gap: '1rem', alignItems: 'center', flexWrap: 'wrap' }}>
+                <div>
+                  <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginBottom: '0.2rem' }}>Servicio de Interés</p>
+                  <span className="badge badge-success">{selectedLead.service_interest || 'General'}</span>
+                </div>
+                <div>
+                  <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginBottom: '0.2rem' }}>Canal de Origen</p>
+                  <span className="badge" style={{ backgroundColor: 'var(--accent-light)', color: 'var(--accent-primary)' }}>{selectedLead.source || 'WEB'}</span>
+                </div>
               </div>
 
               <div style={{ marginBottom: '1.5rem' }}>
@@ -255,16 +299,16 @@ const LeadsPage = () => {
 
               {showQuoteForm && (
                 <div style={{ backgroundColor: 'var(--bg-secondary)', padding: '1.5rem', borderRadius: 'var(--radius-md)', marginBottom: '1.5rem', border: '1px solid var(--border-color)' }}>
-                  <h4 style={{ marginBottom: '1rem', color: 'var(--accent-primary)', display: 'flex', alignItems: 'center', gap: '8px' }}><FileText size={18}/> Generador de Cotización (PDF)</h4>
-                  
+                  <h4 style={{ marginBottom: '1rem', color: 'var(--accent-primary)', display: 'flex', alignItems: 'center', gap: '8px' }}><FileText size={18}/> Generador de Cotización (PDF con QR)</h4>
+
                   <div className="form-group" style={{ marginBottom: '1rem' }}>
                     <label style={{ fontSize: '0.85rem' }}>Título de la Propuesta</label>
-                    <input type="text" className="input-control" value={quoteTitle} onChange={e => setQuoteTitle(e.target.value)} placeholder="Ej. Suministro de Bomba PEMO" />
+                    <input type="text" className="input-control" value={quoteTitle} onChange={e => setQuoteTitle(e.target.value)} placeholder="Ej. Suministro de Filtro Prensa FPA-1500" />
                   </div>
-                  
+
                   <div className="form-group" style={{ marginBottom: '1rem' }}>
-                    <label style={{ fontSize: '0.85rem' }}>Monto Total (USD)</label>
-                    <input type="number" className="input-control" value={quoteAmount} onChange={e => setQuoteAmount(e.target.value)} placeholder="Ej. 15000" />
+                    <label style={{ fontSize: '0.85rem' }}>Valor Venta Subtotal (USD)</label>
+                    <input type="number" className="input-control" value={quoteAmount} onChange={e => setQuoteAmount(e.target.value)} placeholder="Ej. 85000" />
                   </div>
 
                   <div className="form-group" style={{ marginBottom: '1.5rem' }}>
@@ -273,19 +317,28 @@ const LeadsPage = () => {
                   </div>
 
                   <button className="btn btn-primary" style={{ width: '100%', justifyContent: 'center' }} onClick={handleSendQuote} disabled={isQuoting}>
-                    {isQuoting ? 'Generando PDF y Enviando...' : 'Confirmar y Enviar Cotización'}
+                    {isQuoting ? 'Generando PDF y Enviando...' : 'Confirmar y Emitir Cotización'}
                   </button>
                 </div>
               )}
 
-              <div style={{ display: 'flex', gap: '1rem', justifyContent: 'flex-end', borderTop: '1px solid var(--border-color)', paddingTop: '1.5rem' }}>
+              <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'flex-end', borderTop: '1px solid var(--border-color)', paddingTop: '1.5rem', flexWrap: 'wrap' }}>
                 <button className="btn btn-ghost" onClick={() => { setSelectedLead(null); setShowQuoteForm(false); }}>Cerrar</button>
                 {!showQuoteForm && (
                   <button className="btn" style={{ backgroundColor: 'var(--warning)', color: '#fff' }} onClick={() => setShowQuoteForm(true)}>
                     <FileText size={16}/> Generar Cotización
                   </button>
                 )}
-                <a href={`mailto:${selectedLead.contact_email}`} className="btn btn-primary"><Mail size={16}/> Contactar</a>
+                <a
+                  href={buildLeadWhatsAppUrl(selectedLead)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="btn"
+                  style={{ backgroundColor: '#25D366', color: '#fff', textDecoration: 'none' }}
+                >
+                  <MessageCircle size={16}/> WhatsApp Business
+                </a>
+                <a href={`mailto:${selectedLead.contact_email}`} className="btn btn-primary"><Mail size={16}/> Correo</a>
               </div>
             </div>
           </div>

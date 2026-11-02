@@ -9,6 +9,15 @@ dist/
 .env.local
 .env.production
 
+# Terraform state & credentials (NEVER commit)
+**/.terraform/*
+*.tfstate
+*.tfstate.*
+crash.log
+*.tfvars
+*.tfvars.json
+*.pem
+
 # OS files
 .DS_Store
 Thumbs.db

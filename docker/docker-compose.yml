@@ -9,8 +9,6 @@ services:
     ports:
       - "3000:3000"
     environment:
-      # Configuramos el puerto y la DB. Las credenciales de Supabase
-      # se pueden inyectar desde tu .env local en el sistema o CI/CD.
       - PORT=3000
       - NODE_ENV=production
     env_file:
@@ -25,6 +23,7 @@ services:
       dockerfile: Dockerfile
     container_name: dewatering_solutions_frontend
     ports:
+      - "80:80"
       - "8080:80"
     depends_on:
       - backend

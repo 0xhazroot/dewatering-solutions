@@ -1,9 +1,8 @@
 import axios from 'axios';
 
-// Instancia base de Axios
+// Instancia base de Axios: en producción (Docker/AWS) usa el proxy '/api' de Nginx; en desarrollo usa localhost:3000
 const api = axios.create({
-  // Asumimos que el backend de Node estará corriendo en el puerto 3000
-  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:3000/api', 
+  baseURL: import.meta.env.VITE_API_URL || (import.meta.env.PROD ? '/api' : 'http://localhost:3000/api'),
 });
 
 // Interceptor de Request: Inyecta el JWT automáticamente en cada petición

@@ -7,8 +7,9 @@ WORKDIR /app
 COPY package*.json ./
 RUN npm ci
 
-# Copy source code and build
+# Copy source code and build (pointing API to Nginx reverse proxy /api)
 COPY . .
+ENV VITE_API_URL=/api
 RUN npm run build
 
 # Stage 2: Serve the application with Nginx
