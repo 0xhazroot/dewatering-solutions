@@ -35,7 +35,7 @@ const RolesPage = () => {
         await api.put(`/users/${editing.id}`, form); 
       }
       else { 
-        await api.post('/auth/register', { ...form, password: 'password123' }); 
+        await api.post('/auth/register', { ...form, password: 'Dewatering@2026' }); 
       }
       setShowModal(false); fetchUsers();
       Swal.fire({ title: 'Éxito', text: 'Usuario guardado.', icon: 'success', timer: 1500, showConfirmButton: false, background: 'var(--bg-primary)', color: 'var(--text-primary)' });
@@ -213,7 +213,7 @@ const RolesPage = () => {
               
               {!editing && (
                 <div style={{ marginBottom: '1rem', padding: '0.75rem', backgroundColor: 'var(--accent-light)', borderRadius: '6px', fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
-                  La contraseña temporal será: <strong>password123</strong>
+                  La contraseña temporal será: <strong>Dewatering@2026</strong>
                 </div>
               )}
 
