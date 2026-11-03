@@ -11,9 +11,9 @@ router.get('/categories', prodCtrl.getCategories);
 router.get('/slug/:slug', prodCtrl.getBySlug);
 router.get('/:id', prodCtrl.getById);
 
-// Rutas protegidas — admin
-router.post('/', requireAuth, requireRole(['SUPER_ADMIN', 'ADMIN']), prodCtrl.create);
-router.put('/:id', requireAuth, requireRole(['SUPER_ADMIN', 'ADMIN']), prodCtrl.update);
+// Rutas protegidas
+router.post('/', requireAuth, requireRole(['SUPER_ADMIN', 'ADMIN', 'OPERATOR']), prodCtrl.create);
+router.put('/:id', requireAuth, requireRole(['SUPER_ADMIN', 'ADMIN', 'OPERATOR']), prodCtrl.update);
 router.delete('/:id', requireAuth, requireRole(['SUPER_ADMIN', 'ADMIN']), prodCtrl.remove);
 
 export default router;

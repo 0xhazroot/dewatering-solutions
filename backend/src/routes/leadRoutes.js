@@ -11,11 +11,11 @@ router.post('/public', leadCtrl.create);
 // Rutas protegidas
 router.use(requireAuth);
 
-router.get('/', requireRole(['SUPER_ADMIN', 'ADMIN', 'COMMERCIAL']), leadCtrl.getAll);
-router.get('/stats', requireRole(['SUPER_ADMIN', 'ADMIN', 'COMMERCIAL']), leadCtrl.getStats);
-router.get('/:id', requireRole(['SUPER_ADMIN', 'ADMIN', 'COMMERCIAL']), leadCtrl.getById);
-router.post('/', requireRole(['SUPER_ADMIN', 'ADMIN', 'COMMERCIAL']), leadCtrl.create);
-router.put('/:id', requireRole(['SUPER_ADMIN', 'ADMIN', 'COMMERCIAL']), leadCtrl.update);
+router.get('/', requireRole(['SUPER_ADMIN', 'ADMIN', 'OPERATOR', 'COMMERCIAL']), leadCtrl.getAll);
+router.get('/stats', requireRole(['SUPER_ADMIN', 'ADMIN', 'OPERATOR', 'COMMERCIAL']), leadCtrl.getStats);
+router.get('/:id', requireRole(['SUPER_ADMIN', 'ADMIN', 'OPERATOR', 'COMMERCIAL']), leadCtrl.getById);
+router.post('/', requireRole(['SUPER_ADMIN', 'ADMIN', 'OPERATOR', 'COMMERCIAL']), leadCtrl.create);
+router.put('/:id', requireRole(['SUPER_ADMIN', 'ADMIN', 'OPERATOR', 'COMMERCIAL']), leadCtrl.update);
 router.delete('/:id', requireRole(['SUPER_ADMIN', 'ADMIN']), leadCtrl.remove);
 
 export default router;
