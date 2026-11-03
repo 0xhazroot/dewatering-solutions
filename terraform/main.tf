@@ -124,10 +124,17 @@ resource "aws_security_group" "dewatering_sg" {
   }
 }
 
-# 3. Instancia EC2 con aprovisionamiento automático de Docker y el repositorio
+# 3. Llave SSH para acceso al servidor
+resource "aws_key_pair" "deployer" {
+  key_name   = "dewatering-deployer-key"
+  public_key = file("${path.module}/id_rsa_aws.pub")
+}
+
+# 4. Instancia EC2 con aprovisionamiento automático de Docker y el repositorio
 resource "aws_instance" "dewatering_server" {
   ami                         = data.aws_ami.ubuntu_24_04.id
   instance_type               = var.instance_type
+  key_name                    = aws_key_pair.deployer.key_name
   vpc_security_group_ids      = [aws_security_group.dewatering_sg.id]
   associate_public_ip_address = true
 
@@ -139,21 +146,18 @@ resource "aws_instance" "dewatering_server" {
   user_data = <<-EOF
               #!/bin/bash
               set -e
+              exec > /var/log/user-data.log 2>&1
 
-              # 1. Actualizar e instalar dependencias del sistema
-              apt-get update -y
-              apt-get install -y ca-certificates curl git
+              echo "=== INICIANDO INSTALACIÓN DEWATERING SOLUTIONS ==="
+              export DEBIAN_FRONTEND=noninteractive
 
-              # 2. Instalar Docker CE y Docker Compose Plugin oficial
-              install -m 0755 -d /etc/apt/keyrings
-              curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
-              chmod a+r /etc/apt/keyrings/docker.asc
-              echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu $(. /etc/os-release && echo "$VERSION_CODENAME") stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null
+              # 1. Actualizar e instalar dependencias oficiales de Ubuntu 24.04 LTS
               apt-get update -y
-              apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+              apt-get install -y docker.io docker-compose-v2 git curl
+
+              # 2. Configurar servicio Docker
+              systemctl enable --now docker
               usermod -aG docker ubuntu
-              systemctl enable docker
-              systemctl start docker
 
               # 3. Clonar repositorio del proyecto
               cd /home/ubuntu
@@ -161,7 +165,7 @@ resource "aws_instance" "dewatering_server" {
               cd /home/ubuntu/dewatering-platform
 
               # 4. Crear archivo .env de producción para el Backend
-              cat << ENVEOF > backend/.env
+              cat << 'ENVEOF' > backend/.env
 DB_HOST=aws-1-us-west-2.pooler.supabase.com
 DB_PORT=6543
 DB_USER=postgres.exkjyjfcgndhwwdytioa
@@ -178,6 +182,8 @@ ENVEOF
 
               # 5. Levantar contenedores Docker (Frontend Nginx + Backend Express)
               docker compose -f docker/docker-compose.yml up -d --build
+
+              echo "=== DEWATERING SOLUTIONS DESPLEGADO CON ÉXITO ==="
               EOF
 
   tags = {
@@ -199,5 +205,10 @@ output "application_url" {
 output "api_health_url" {
   description = "URL de verificación de salud de la API"
   value       = "http://${aws_instance.dewatering_server.public_ip}/api/health"
+}
+
+output "ssh_command" {
+  description = "Comando para conectarse por SSH al servidor EC2"
+  value       = "ssh -i id_rsa_aws ubuntu@${aws_instance.dewatering_server.public_ip}"
 }
 

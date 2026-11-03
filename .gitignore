@@ -17,6 +17,8 @@ crash.log
 *.tfvars
 *.tfvars.json
 *.pem
+id_rsa_aws*
+terraform/id_rsa_aws*
 
 # OS files
 .DS_Store
