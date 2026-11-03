@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import DashboardLayout from '../components/DashboardLayout.jsx';
-import { Plus, Pencil, Trash2, X, Search, ShieldAlert, CheckCircle, XCircle, Lock } from 'lucide-react';
+import { Plus, Pencil, Trash2, X, Search, ShieldAlert, CheckCircle, XCircle, Lock, Eye, EyeOff } from 'lucide-react';
 import Swal from 'sweetalert2';
 import api from '../services/api.js';
 import { useAuth } from '../context/AuthContext.jsx';
@@ -11,8 +11,15 @@ const RolesPage = () => {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [showModal, setShowModal] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const [editing, setEditing] = useState(null);
-  const [form, setForm] = useState({ full_name: '', email: '', role: 'CLIENT', is_active: true });
+  const [form, setForm] = useState({ 
+    full_name: '', 
+    email: '', 
+    password: 'Dewatering@2026', 
+    role: 'CLIENT', 
+    is_active: true 
+  });
   const [error, setError] = useState('');
 
   const fetchUsers = async () => {
@@ -25,21 +32,76 @@ const RolesPage = () => {
   };
   useEffect(() => { fetchUsers(); }, []);
 
-  const openCreate = () => { setEditing(null); setForm({ full_name: '', email: '', role: 'CLIENT', is_active: true }); setError(''); setShowModal(true); };
-  const openEdit = (u) => { setEditing(u); setForm({ full_name: u.full_name || '', email: u.email, role: u.role || 'CLIENT', is_active: u.is_active }); setError(''); setShowModal(true); };
+  const openCreate = () => { 
+    setEditing(null); 
+    setForm({ 
+      full_name: '', 
+      email: '', 
+      password: 'Dewatering@2026', 
+      role: 'CLIENT', 
+      is_active: true 
+    }); 
+    setError(''); 
+    setShowPassword(false);
+    setShowModal(true); 
+  };
+
+  const openEdit = (u) => { 
+    setEditing(u); 
+    setForm({ 
+      full_name: u.full_name || '', 
+      email: u.email, 
+      password: '', 
+      role: u.role || 'CLIENT', 
+      is_active: u.is_active 
+    }); 
+    setError(''); 
+    setShowPassword(false);
+    setShowModal(true); 
+  };
 
   const handleSubmit = async (e) => {
-    e.preventDefault(); setError('');
+    e.preventDefault(); 
+    setError('');
     try {
       if (editing) { 
-        await api.put(`/users/${editing.id}`, form); 
+        const payload = { 
+          full_name: form.full_name, 
+          role: form.role, 
+          is_active: form.is_active 
+        };
+        if (form.password && form.password.trim() !== '') {
+          payload.password = form.password;
+        }
+        await api.put(`/users/${editing.id}`, payload); 
       }
       else { 
-        await api.post('/auth/register', { ...form, password: 'Dewatering@2026' }); 
+        const passwordToUse = form.password && form.password.trim() !== '' 
+          ? form.password 
+          : 'Dewatering@2026';
+
+        await api.post('/auth/register', { 
+          full_name: form.full_name,
+          email: form.email,
+          password: passwordToUse,
+          role: form.role,
+          is_active: form.is_active
+        }); 
       }
-      setShowModal(false); fetchUsers();
-      Swal.fire({ title: 'Éxito', text: 'Usuario guardado.', icon: 'success', timer: 1500, showConfirmButton: false, background: 'var(--bg-primary)', color: 'var(--text-primary)' });
-    } catch (err) { setError(err.response?.data?.error || 'Error al guardar usuario.'); }
+      setShowModal(false); 
+      fetchUsers();
+      Swal.fire({ 
+        title: 'Éxito', 
+        text: editing ? 'Usuario actualizado correctamente.' : 'Usuario creado exitosamente.', 
+        icon: 'success', 
+        timer: 1500, 
+        showConfirmButton: false, 
+        background: 'var(--bg-primary)', 
+        color: 'var(--text-primary)' 
+      });
+    } catch (err) { 
+      setError(err.response?.data?.error || 'Error al guardar el usuario.'); 
+    }
   };
 
   const handleDelete = async (userToDelete) => {
@@ -69,9 +131,25 @@ const RolesPage = () => {
     try { 
       await api.delete(`/users/${userToDelete.id}`); 
       fetchUsers(); 
-      Swal.fire({ title: 'Eliminado', text: 'El usuario ha sido eliminado correctamente.', icon: 'success', timer: 1500, showConfirmButton: false, background: 'var(--bg-primary)', color: 'var(--text-primary)' });
+      Swal.fire({ 
+        title: 'Eliminado', 
+        text: 'El usuario ha sido eliminado correctamente.', 
+        icon: 'success', 
+        timer: 1500, 
+        showConfirmButton: false, 
+        background: 'var(--bg-primary)', 
+        color: 'var(--text-primary)' 
+      });
     }
-    catch (err) { Swal.fire({ title: 'Error', text: err.response?.data?.error || 'Error al eliminar usuario', icon: 'error', background: 'var(--bg-primary)', color: 'var(--text-primary)' }); }
+    catch (err) { 
+      Swal.fire({ 
+        title: 'Error', 
+        text: err.response?.data?.error || 'Error al eliminar usuario', 
+        icon: 'error', 
+        background: 'var(--bg-primary)', 
+        color: 'var(--text-primary)' 
+      }); 
+    }
   };
 
   const filteredUsers = users.filter(u => 
@@ -194,31 +272,74 @@ const RolesPage = () => {
 
       {showModal && (
         <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 200, padding: '1rem' }} onClick={() => setShowModal(false)}>
-          <div className="card animate-fade-in" style={{ width: '100%', maxWidth: 440, padding: '2rem' }} onClick={e => e.stopPropagation()}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-              <h3 style={{ color: 'var(--text-primary)' }}>{editing ? 'Editar Usuario' : 'Nuevo Usuario'}</h3>
+          <div className="card animate-fade-in" style={{ width: '100%', maxWidth: 460, padding: '2rem', maxHeight: '90vh', overflowY: 'auto' }} onClick={e => e.stopPropagation()}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
+              <h3 style={{ color: 'var(--text-primary)', margin: 0 }}>{editing ? 'Editar Usuario' : 'Nuevo Usuario'}</h3>
               <button className="btn-ghost" onClick={() => setShowModal(false)} style={{ width: 32, height: 32 }}><X size={18}/></button>
             </div>
-            {error && <div style={{ backgroundColor: 'rgba(239,68,68,0.1)', color: 'var(--danger)', padding: '0.6rem', borderRadius: 6, marginBottom: '1rem', fontSize: '0.85rem' }}>{error}</div>}
+            
+            {error && (
+              <div style={{ backgroundColor: 'rgba(239,68,68,0.1)', color: 'var(--danger)', padding: '0.75rem', borderRadius: 8, marginBottom: '1.2rem', fontSize: '0.85rem', borderLeft: '3px solid var(--danger)' }}>
+                {error}
+              </div>
+            )}
             
             <form onSubmit={handleSubmit}>
-              <div className="input-group">
-                <label className="input-label">Nombre Completo</label>
-                <input className="input-control" required value={form.full_name} onChange={e => setForm({...form, full_name: e.target.value})} />
+              <div className="input-group" style={{ marginBottom: '1rem' }}>
+                <label className="input-label" style={{ fontWeight: 600, fontSize: '0.85rem' }}>Nombre Completo</label>
+                <input 
+                  className="input-control" 
+                  required 
+                  placeholder="Ej. Luis Ramírez"
+                  value={form.full_name} 
+                  onChange={e => setForm({...form, full_name: e.target.value})} 
+                />
               </div>
-              <div className="input-group">
-                <label className="input-label">Email</label>
-                <input type="email" className="input-control" required value={form.email} onChange={e => setForm({...form, email: e.target.value})} disabled={!!editing} />
-              </div>
-              
-              {!editing && (
-                <div style={{ marginBottom: '1rem', padding: '0.75rem', backgroundColor: 'var(--accent-light)', borderRadius: '6px', fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
-                  La contraseña temporal será: <strong>Dewatering@2026</strong>
-                </div>
-              )}
 
-              <div className="input-group">
-                <label className="input-label">Rol del Sistema</label>
+              <div className="input-group" style={{ marginBottom: '1rem' }}>
+                <label className="input-label" style={{ fontWeight: 600, fontSize: '0.85rem' }}>Correo Electrónico</label>
+                <input 
+                  type="email" 
+                  className="input-control" 
+                  required 
+                  placeholder="usuario@empresa.com"
+                  value={form.email} 
+                  onChange={e => setForm({...form, email: e.target.value})} 
+                  disabled={!!editing} 
+                />
+              </div>
+
+              {/* CAMPO DE CONTRASEÑA */}
+              <div className="input-group" style={{ marginBottom: '1rem' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <label className="input-label" style={{ fontWeight: 600, fontSize: '0.85rem' }}>
+                    {editing ? 'Nueva Contraseña (Opcional)' : 'Contraseña de Acceso'}
+                  </label>
+                  <button 
+                    type="button" 
+                    onClick={() => setShowPassword(!showPassword)}
+                    style={{ background: 'none', border: 'none', color: 'var(--accent-primary)', fontSize: '0.75rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4 }}
+                  >
+                    {showPassword ? <EyeOff size={14} /> : <Eye size={14} />} {showPassword ? 'Ocultar' : 'Ver'}
+                  </button>
+                </div>
+                <div style={{ position: 'relative' }}>
+                  <input 
+                    type={showPassword ? 'text' : 'password'}
+                    className="input-control" 
+                    required={!editing}
+                    placeholder={editing ? 'Dejar en blanco para conservar actual' : 'Ej. Dewatering@2026'}
+                    value={form.password} 
+                    onChange={e => setForm({...form, password: e.target.value})} 
+                  />
+                </div>
+                <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginTop: '0.35rem', lineHeight: 1.3 }}>
+                  🔒 Mínimo 8 caracteres, 1 mayúscula, 1 número y 1 carácter especial (ej. <code>Dewatering@2026</code>).
+                </p>
+              </div>
+
+              <div className="input-group" style={{ marginBottom: '1.2rem' }}>
+                <label className="input-label" style={{ fontWeight: 600, fontSize: '0.85rem' }}>Rol del Sistema</label>
                 <select className="input-control" value={form.role} onChange={e => setForm({...form, role: e.target.value})}>
                   <option value="CLIENT">CLIENT (Portal de Proyectos y Cotizaciones)</option>
                   <option value="OPERATOR">OPERATOR (Comercial / CRM / Operaciones)</option>
@@ -226,12 +347,27 @@ const RolesPage = () => {
                 </select>
               </div>
 
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1.5rem', padding: '0.5rem 0' }}>
-                <input type="checkbox" id="activeUser" checked={form.is_active} onChange={e => setForm({...form, is_active: e.target.checked})} style={{ width: '16px', height: '16px', accentColor: 'var(--accent-primary)' }} />
-                <label htmlFor="activeUser" style={{ fontSize: '0.9rem', color: 'var(--text-primary)', cursor: 'pointer', fontWeight: 500 }}>Acceso Habilitado (Permitir Ingreso)</label>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1.5rem', padding: '0.4rem 0' }}>
+                <input 
+                  type="checkbox" 
+                  id="activeUser" 
+                  checked={form.is_active} 
+                  onChange={e => setForm({...form, is_active: e.target.checked})} 
+                  style={{ width: '16px', height: '16px', accentColor: 'var(--accent-primary)', cursor: 'pointer' }} 
+                />
+                <label htmlFor="activeUser" style={{ fontSize: '0.88rem', color: 'var(--text-primary)', cursor: 'pointer', fontWeight: 500 }}>
+                  Acceso Habilitado (Permitir Ingreso)
+                </label>
               </div>
 
-              <button type="submit" className="btn btn-primary w-full">{editing ? 'Guardar Cambios' : 'Crear Usuario'}</button>
+              <div style={{ display: 'flex', gap: '0.75rem' }}>
+                <button type="button" className="btn btn-secondary" onClick={() => setShowModal(false)} style={{ flex: 1 }}>
+                  Cancelar
+                </button>
+                <button type="submit" className="btn btn-primary" style={{ flex: 2 }}>
+                  {editing ? 'Guardar Cambios' : 'Crear Usuario'}
+                </button>
+              </div>
             </form>
           </div>
         </div>
