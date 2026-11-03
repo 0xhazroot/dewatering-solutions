@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
 import DashboardLayout from '../../components/DashboardLayout.jsx';
-import { FileText, Download, FileArchive, Search, Filter, ShieldCheck, Activity } from 'lucide-react';
+import { FileText, Download, FileArchive, Search, Filter, ShieldCheck, Activity, CheckCircle2 } from 'lucide-react';
 import Swal from 'sweetalert2';
 
 const ClientDocumentsPage = () => {
   const [searchTerm, setSearchTerm] = useState('');
+  const [downloadingId, setDownloadingId] = useState(null);
   
   const documents = [
     {
@@ -38,7 +39,7 @@ const ClientDocumentsPage = () => {
       id: 'DOC-2025-210',
       title: 'Dossier de Calidad - Overhaul Filtro Prensa',
       project: 'PRJ-2025-089 (Marcobre)',
-      type: 'Dossier Final',
+      type: 'Dossier Final (Data Book)',
       date: '15-Dic-2025',
       size: '45.5 MB',
       category: 'dossier'
@@ -55,16 +56,54 @@ const ClientDocumentsPage = () => {
     }
   };
 
-  const handleDownload = (id) => {
-    Swal.fire({
-      title: 'Conectando...',
-      text: `Descargando archivo seguro: ${id}.pdf`,
-      icon: 'info',
-      timer: 2000,
-      showConfirmButton: false,
-      background: 'var(--bg-primary)',
-      color: 'var(--text-primary)'
-    });
+  const handleDownload = async (doc) => {
+    setDownloadingId(doc.id);
+    try {
+      Swal.fire({
+        title: 'Preparando Documento...',
+        html: `Generando y verificando:<br><b>${doc.title}</b>`,
+        icon: 'info',
+        showConfirmButton: false,
+        timer: 1200,
+        background: 'var(--bg-primary)',
+        color: 'var(--text-primary)'
+      });
+
+      const token = localStorage.getItem('token');
+      const response = await fetch(`/api/documents/${doc.id}/pdf`, {
+        headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+      });
+
+      if (!response.ok) {
+        throw new Error('Error al generar PDF en el servidor');
+      }
+
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      const cleanTitle = doc.title.replace(/[^a-zA-Z0-9_-]/g, '_');
+      a.download = `${doc.id}_${cleanTitle}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+
+      Swal.fire({
+        title: '¡Descarga Completa!',
+        text: `El documento oficial ${doc.id} se ha descargado correctamente en su dispositivo.`,
+        icon: 'success',
+        timer: 2200,
+        showConfirmButton: false,
+        background: 'var(--bg-primary)',
+        color: 'var(--text-primary)'
+      });
+    } catch (error) {
+      console.warn('Fallback a descarga directa:', error);
+      window.open(`/api/documents/${doc.id}/pdf`, '_blank');
+    } finally {
+      setDownloadingId(null);
+    }
   };
 
   const filteredDocuments = documents.filter(doc => 
@@ -114,7 +153,14 @@ const ClientDocumentsPage = () => {
                     </div>
                     <div>
                       <div style={{ fontWeight: 600, color: 'var(--text-primary)', marginBottom: '4px' }}>{doc.title}</div>
-                      <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>{doc.type} | ID: {doc.id}</div>
+                      <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
+                        {doc.type} | ID: {doc.id}
+                        {doc.category === 'dossier' && (
+                          <span style={{ marginLeft: '8px', padding: '2px 8px', borderRadius: '6px', fontSize: '0.75rem', backgroundColor: 'rgba(139, 92, 246, 0.15)', color: '#8b5cf6', fontWeight: 600 }}>
+                            ★ ISO 9001 Turnover Package
+                          </span>
+                        )}
+                      </div>
                     </div>
                   </div>
                 </td>
@@ -128,8 +174,26 @@ const ClientDocumentsPage = () => {
                   {doc.size}
                 </td>
                 <td style={{ padding: '1.25rem 1.5rem', textAlign: 'right' }}>
-                  <button onClick={() => handleDownload(doc.id)} className="btn-outline" title="Descargar Documento Segurizado" style={{ padding: '0.5rem 1rem', borderRadius: '8px', display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '0.85rem', cursor: 'pointer' }}>
-                    <Download size={16} /> Bajar PDF
+                  <button 
+                    onClick={() => handleDownload(doc)} 
+                    disabled={downloadingId === doc.id}
+                    className="btn-outline" 
+                    title="Descargar Documento Oficial" 
+                    style={{ 
+                      padding: '0.5rem 1rem', 
+                      borderRadius: '8px', 
+                      display: 'inline-flex', 
+                      alignItems: 'center', 
+                      gap: '6px', 
+                      fontSize: '0.85rem', 
+                      cursor: downloadingId === doc.id ? 'not-allowed' : 'pointer',
+                      backgroundColor: doc.category === 'dossier' ? 'rgba(139, 92, 246, 0.1)' : undefined,
+                      borderColor: doc.category === 'dossier' ? '#8b5cf6' : undefined,
+                      color: doc.category === 'dossier' ? '#8b5cf6' : undefined,
+                      fontWeight: doc.category === 'dossier' ? 600 : 500
+                    }}
+                  >
+                    <Download size={16} /> {downloadingId === doc.id ? 'Descargando...' : (doc.category === 'dossier' ? 'Bajar Dossier PDF' : 'Bajar PDF')}
                   </button>
                 </td>
               </tr>

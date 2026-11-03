@@ -5,8 +5,9 @@ import { requireRole } from '../middlewares/rbacMiddleware.js';
 
 const router = Router();
 
-// Rutas públicas — documentos marcados como públicos
+// Rutas públicas — documentos públicos y descarga directa de PDFs y Dossiers
 router.get('/public', (req, res, next) => { req.query.is_public = true; docCtrl.getAll(req, res, next); });
+router.get('/:id/pdf', docCtrl.downloadPDF);
 router.post('/:id/download', docCtrl.download);
 
 // Rutas protegidas

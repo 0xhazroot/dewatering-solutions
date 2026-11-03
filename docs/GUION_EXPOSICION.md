@@ -85,7 +85,7 @@
 
 ## ☁️ BLOQUE 5: Tu Rol — Cloud, DevOps, Contenedores Docker, Terraform y QA (Minuto 7:00 - 9:00)
 
-**[🖥️ En pantalla: Mostrar el [`README.md`](file:///c:/pretesis-haziel/dewatering-platform/README.md) con los diagramas de arquitectura, y abrir [`docker/docker-compose.yml`](file:///c:/pretesis-haziel/dewatering-platform/docker/docker-compose.yml), [`frontend/Dockerfile`](file:///c:/pretesis-haziel/dewatering-platform/frontend/Dockerfile), [`frontend/nginx.conf`](file:///c:/pretesis-haziel/dewatering-platform/frontend/nginx.conf) y [`terraform/main.tf`](file:///c:/pretesis-haziel/dewatering-platform/terraform/main.tf)]**
+**[🖥️ En pantalla: Mostrar el [`README.md`](file:///c:/pretesis-haziel/dewatering-platform/README.md) con los diagramas de arquitectura, y abrir [`docker/docker-compose.yml`](file:///c:/pretesis-haziel/dewatering-platform/docker/docker- compose.yml), [`frontend/Dockerfile`](file:///c:/pretesis-haziel/dewatering-platform/frontend/Dockerfile), [`frontend/nginx.conf`](file:///c:/pretesis-haziel/dewatering-platform/frontend/nginx.conf) y [`terraform/main.tf`](file:///c:/pretesis-haziel/dewatering-platform/terraform/main.tf)]**
 
 > **🗣️ Qué decir (Tu parte protagonista como responsable de Cloud, DevOps y QA):**
 > "Ahora explicaré el trabajo realizado en la capa de **Ingeniería Cloud, DevOps y Aseguramiento de Calidad (QA)**, de la cual estuve a cargo:
