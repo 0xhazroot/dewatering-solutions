@@ -14,7 +14,6 @@ import ForgotPasswordPage from './pages/ForgotPasswordPage.jsx';
 import DashboardPage from './pages/DashboardPage.jsx';
 import InventoryPage from './pages/InventoryPage.jsx';
 import StoresPage from './pages/StoresPage.jsx';
-import StaffPage from './pages/StaffPage.jsx';
 import AuditPage from './pages/AuditPage.jsx';
 import RolesPage from './pages/RolesPage.jsx';
 import ApprovalsPage from './pages/ApprovalsPage.jsx';
@@ -113,7 +112,7 @@ const App = () => {
             <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
             <Route path="/inventory" element={<ProtectedRoute requiredRoles={['SUPER_ADMIN', 'OPERATOR']}><InventoryPage /></ProtectedRoute>} />
             <Route path="/stores" element={<ProtectedRoute requiredRoles={['SUPER_ADMIN', 'OPERATOR']}><StoresPage /></ProtectedRoute>} />
-            <Route path="/staff" element={<ProtectedRoute requiredRoles={['SUPER_ADMIN']}><StaffPage /></ProtectedRoute>} />
+            <Route path="/staff" element={<Navigate to="/roles" replace />} />
             <Route path="/audit" element={<ProtectedRoute requiredRoles={['SUPER_ADMIN']}><AuditPage /></ProtectedRoute>} />
             <Route path="/roles" element={<ProtectedRoute requiredRoles={['SUPER_ADMIN']}><RolesPage /></ProtectedRoute>} />
             <Route path="/approvals" element={<ProtectedRoute requiredRoles={['SUPER_ADMIN']}><ApprovalsPage /></ProtectedRoute>} />
@@ -129,7 +128,7 @@ const App = () => {
             <Route path="/leads" element={<ProtectedRoute requiredRoles={['SUPER_ADMIN', 'OPERATOR']}><LeadsPage /></ProtectedRoute>} />
             <Route path="/admin/requests" element={<ProtectedRoute requiredRoles={['SUPER_ADMIN', 'OPERATOR']}><AdminRequestsPage /></ProtectedRoute>} />
             <Route path="/admin/quotations" element={<ProtectedRoute requiredRoles={['SUPER_ADMIN', 'OPERATOR']}><AdminQuotationsPage /></ProtectedRoute>} />
-                        {/* Catch-all */}
+            {/* Catch-all */}
             <Route path="*" element={<Navigate to="/" />} />
           </Routes>
         </BrowserRouter>

@@ -18,7 +18,6 @@ const navItems = [
   { section: 'Operaciones', items: [
     { label: 'Inventario', icon: Package, path: '/inventory', roles: ['SUPER_ADMIN', 'OPERATOR'] },
     { label: 'Sucursales', icon: Store, path: '/stores', roles: ['SUPER_ADMIN', 'OPERATOR'] },
-    { label: 'Personal', icon: Users, path: '/staff', roles: ['SUPER_ADMIN'] },
   ]},
   { section: 'Área del Cliente', items: [
     { label: 'Mis Proyectos', icon: Store, path: '/client/projects', roles: ['CLIENT'] },

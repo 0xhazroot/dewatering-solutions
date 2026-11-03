@@ -29,7 +29,14 @@ export const update = async (req, res, next) => {
 
 export const toggleActive = async (req, res, next) => {
   try {
-    const { is_active } = req.body;
+    const is_active = req.body.is_active !== undefined 
+      ? req.body.is_active 
+      : (req.body.activo !== undefined ? req.body.activo : req.body.status);
+
+    if (req.user && req.user.id === req.params.id && !is_active) {
+      return res.status(400).json({ error: 'No puedes desactivar tu propia cuenta en sesión.' });
+    }
+
     const user = await userModel.toggleActive(req.params.id, is_active);
     if (!user) return res.status(404).json({ error: 'Usuario no encontrado.' });
     await auditService.log(req, is_active ? 'ACTIVATE' : 'DEACTIVATE', 'USER', user.id, null, { is_active });
@@ -51,10 +58,13 @@ export const changePassword = async (req, res, next) => {
 
 export const remove = async (req, res, next) => {
   try {
+    if (req.user && req.user.id === req.params.id) {
+      return res.status(400).json({ error: 'No puedes eliminar tu propia cuenta en sesión activa.' });
+    }
     const user = await userModel.delete(req.params.id);
     if (!user) return res.status(404).json({ error: 'Usuario no encontrado.' });
     await auditService.log(req, 'DELETE', 'USER', user.id, user, null);
-    res.json({ message: 'Usuario eliminado.' });
+    res.json({ message: 'Usuario eliminado exitosamente.' });
   } catch (error) { next(error); }
 };
 
