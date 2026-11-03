@@ -35,6 +35,20 @@ variable "repo_url" {
   default     = "https://github.com/0xhazroot/dewatering-solutions.git"
 }
 
+variable "groq_api_key" {
+  description = "Groq API Key para el Asistente Virtual"
+  type        = string
+  sensitive   = true
+  default     = ""
+}
+
+variable "db_password" {
+  description = "Password de la base de datos Supabase"
+  type        = string
+  sensitive   = true
+  default     = "Dewatering-Plataform"
+}
+
 # 1. Buscar automáticamente la última imagen oficial de Ubuntu 24.04 LTS en AWS
 data "aws_ami" "ubuntu_24_04" {
   most_recent = true
@@ -125,8 +139,12 @@ resource "aws_instance" "dewatering_server" {
   user_data = <<-EOF
               #!/bin/bash
               set -e
+
+              # 1. Actualizar e instalar dependencias del sistema
               apt-get update -y
               apt-get install -y ca-certificates curl git
+
+              # 2. Instalar Docker CE y Docker Compose Plugin oficial
               install -m 0755 -d /etc/apt/keyrings
               curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
               chmod a+r /etc/apt/keyrings/docker.asc
@@ -137,9 +155,29 @@ resource "aws_instance" "dewatering_server" {
               systemctl enable docker
               systemctl start docker
 
+              # 3. Clonar repositorio del proyecto
               cd /home/ubuntu
               git clone ${var.repo_url} dewatering-platform
+              cd /home/ubuntu/dewatering-platform
+
+              # 4. Crear archivo .env de producción para el Backend
+              cat << ENVEOF > backend/.env
+DB_HOST=aws-1-us-west-2.pooler.supabase.com
+DB_PORT=6543
+DB_USER=postgres.exkjyjfcgndhwwdytioa
+DB_PASSWORD=${var.db_password}
+DB_NAME=postgres
+JWT_SECRET=dewatering_solutions_jwt_secret_2026_super_secure
+PORT=3000
+NODE_ENV=production
+GROQ_API_KEY=${var.groq_api_key}
+GROQ_MODEL=openai/gpt-oss-120b
+ENVEOF
+
               chown -R ubuntu:ubuntu /home/ubuntu/dewatering-platform
+
+              # 5. Levantar contenedores Docker (Frontend Nginx + Backend Express)
+              docker compose -f docker/docker-compose.yml up -d --build
               EOF
 
   tags = {
