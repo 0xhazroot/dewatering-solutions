@@ -19,12 +19,9 @@ class AuthService {
       throw new Error('Email, password y nombre completo son obligatorios.');
     }
 
-    // Validación de dominio corporativo para roles internos
-    const internalRoles = ['SUPER_ADMIN', 'OPERATOR'];
-    const targetRole = role || 'CLIENT';
-    if (internalRoles.includes(targetRole) && !email.toLowerCase().endsWith('@dewatering.com')) {
-      throw new Error('Los usuarios internos deben usar correo @dewatering.com');
-    }
+    // El registro público es EXCLUSIVAMENTE para clientes externos (B2B).
+    // Los roles internos y administrativos solo pueden ser creados por un SUPER_ADMIN en /api/users.
+    const targetRole = 'CLIENT';
 
     // Validación de complejidad de contraseña (mín 8 chars, 1 mayúscula, 1 número, 1 especial)
     const passwordRegex = /^(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}$/;
@@ -40,7 +37,7 @@ class AuthService {
     const password_hash = await bcrypt.hash(password, 12);
 
     // Si el rol es CLIENT (registro web), nace inactivo para requerir validación B2B
-    const is_active = targetRole === 'CLIENT' ? false : true;
+    const is_active = false;
 
     const newUser = await userModel.create({
       email, password_hash, full_name,

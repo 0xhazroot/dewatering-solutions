@@ -63,6 +63,11 @@ app.get('/api/dashboard', async (req, res, next) => {
     const jwt = (await import('jsonwebtoken')).default;
     const decoded = jwt.verify(authHeader.split(' ')[1], process.env.JWT_SECRET);
     
+    // RBAC: Clientes no tienen acceso a métricas ni telemetría global
+    if (decoded.role === 'CLIENT') {
+      return res.status(403).json({ error: 'Acceso no autorizado para rol CLIENT.' });
+    }
+    
     const [userModel, leadModel, quotationModel, projectModel] = await Promise.all([
       import('./models/userModel.js'), import('./models/leadModel.js'),
       import('./models/quotationModel.js'), import('./models/projectModel.js')

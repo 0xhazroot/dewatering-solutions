@@ -42,11 +42,35 @@ variable "groq_api_key" {
   default     = ""
 }
 
+variable "db_host" {
+  description = "Host de la base de datos PostgreSQL"
+  type        = string
+  default     = "localhost"
+}
+
+variable "db_port" {
+  description = "Puerto de la base de datos PostgreSQL"
+  type        = number
+  default     = 5432
+}
+
+variable "db_user" {
+  description = "Usuario de la base de datos PostgreSQL"
+  type        = string
+  default     = "postgres"
+}
+
+variable "db_name" {
+  description = "Nombre de la base de datos"
+  type        = string
+  default     = "dewatering_solutions"
+}
+
 variable "db_password" {
-  description = "Password de la base de datos Supabase"
+  description = "Password de la base de datos PostgreSQL"
   type        = string
   sensitive   = true
-  default     = "Dewatering-Plataform"
+  default     = "Dewatering@2026"
 }
 
 # 1. Buscar automáticamente la última imagen oficial de Ubuntu 24.04 LTS en AWS
@@ -102,16 +126,9 @@ resource "aws_security_group" "dewatering_sg" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 
-  ingress {
-    description = "Puerto directo API Healthcheck (3000)"
-    from_port   = 3000
-    to_port     = 3000
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
 
   egress {
-    description = "Salida libre a Internet (Supabase PostgreSQL + IA API + Docker Hub)"
+    description = "Salida libre a Internet (PostgreSQL + IA API + Docker Hub)"
     from_port   = 0
     to_port     = 0
     protocol    = "-1"
@@ -165,12 +182,12 @@ resource "aws_instance" "dewatering_server" {
               cd /home/ubuntu/dewatering-platform
 
               # 4. Crear archivo .env de producción para el Backend
-              cat << 'ENVEOF' > backend/.env
-DB_HOST=aws-1-us-west-2.pooler.supabase.com
-DB_PORT=6543
-DB_USER=postgres.exkjyjfcgndhwwdytioa
+              cat << ENVEOF > backend/.env
+DB_HOST=${var.db_host}
+DB_PORT=${var.db_port}
+DB_USER=${var.db_user}
 DB_PASSWORD=${var.db_password}
-DB_NAME=postgres
+DB_NAME=${var.db_name}
 JWT_SECRET=dewatering_solutions_jwt_secret_2026_super_secure
 PORT=3000
 NODE_ENV=production

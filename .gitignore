@@ -32,5 +32,6 @@ npm-debug.log*
 .vscode/
 .idea/
 
-# Internal reports (not for public repo)
+# Internal reports and documentation (not for public repo)
 REPORTE_FEEDBACK.md
+docs/

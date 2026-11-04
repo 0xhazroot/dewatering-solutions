@@ -69,7 +69,7 @@ const ClientDocumentsPage = () => {
         color: 'var(--text-primary)'
       });
 
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem('dewatering_token');
       const response = await fetch(`/api/documents/${doc.id}/pdf`, {
         headers: token ? { 'Authorization': `Bearer ${token}` } : {}
       });

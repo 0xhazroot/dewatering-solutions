@@ -66,7 +66,7 @@ flowchart TB
     end
 
     subgraph External["Servicios Cloud Gestionados & Motores IA"]
-        PG[("PostgreSQL 16 (Supabase)<br/>13 Tablas Relacionales")]
+        PG[("PostgreSQL 16 Relacional<br/>Pool Nativo 'pg' (13 Tablas)")]
         VEC[("Extensión pgvector<br/>Índice IVFFlat (768 dims)")]
         GROQ["Groq Cloud API<br/>Inferencia Ultrarrápida (GPT-OSS-120B / Qwen)"]
         GEM["Google Gemini API<br/>Embeddings Vectoriales + Visión OCR"]
@@ -267,8 +267,7 @@ dewatering-platform/
 │   │   ├── app.js                  # Configuración Express 5, Helmet, CORS y rutas API
 │   │   ├── server.js               # Servidor HTTP resiliente y conexión al pool PostgreSQL
 │   │   ├── config/
-│   │   │   ├── db.js               # Conexión PG (pgvector) y fallback en memoria
-│   │   │   └── supabase.js         # Cliente para ingesta de documentos
+│   │   │   └── db.js                   # Conexión PG (pgvector) con pool nativo y fallback resiliente
 │   │   ├── controllers/            # Controladores de negocio (chat, quotation, document, lead...)
 │   │   ├── middlewares/            # authMiddleware (JWT), rbacMiddleware, abacMiddleware
 │   │   ├── models/                 # Modelos con consultas parametrizadas ($1, $2...)

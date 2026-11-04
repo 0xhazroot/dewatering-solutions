@@ -16,8 +16,6 @@
   },
   "dependencies": {
     "@google/genai": "^2.9.0",
-    "@google/generative-ai": "^0.24.1",
-    "@supabase/supabase-js": "^2.110.0",
     "bcrypt": "^6.0.0",
     "cors": "^2.8.6",
     "dotenv": "^17.4.2",
@@ -26,16 +24,15 @@
     "jsonwebtoken": "^9.0.3",
     "mammoth": "^1.12.0",
     "multer": "^2.2.0",
-    "pdf-parse": "^2.4.5",
     "pdf-parse-new": "^2.1.0",
     "pdfkit": "^0.19.1",
     "pg": "^8.20.0",
     "qrcode": "^1.5.4",
     "speakeasy": "^2.0.0",
-    "ws": "^8.21.0"
+    "ws": "^8.21.0",
+    "morgan": "^1.10.1"
   },
   "devDependencies": {
-    "morgan": "^1.10.1",
     "nodemon": "^3.1.14"
   }
 }

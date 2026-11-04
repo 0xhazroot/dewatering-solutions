@@ -1,3 +1,4 @@
+import crypto from 'crypto';
 import documentModel from '../models/documentModel.js';
 import auditService from '../services/auditService.js';
 import PDFDocument from 'pdfkit';
@@ -273,6 +274,7 @@ export const downloadPDF = async (req, res, next) => {
       doc.fontSize(7).font('Helvetica-Bold').fillColor('#0f172a').text('Ing. Marco Villegas P.', 395, boxY + 64, { align: 'center', width: boxW - 10 });
       doc.fontSize(6.5).font('Helvetica').fillColor('#475569').text('Superintendente de Filtrado y Relaves\nReg. CIP N° 167332', 395, boxY + 74, { align: 'center', width: boxW - 10 });
 
+      const dossierIntegrityHash = crypto.createHash('sha256').update(String(docId) + '-DOSSIER-TURNOVER-ISO9001').digest('hex');
       const sec5Y = boxY + boxH + 16;
       doc.rect(40, sec5Y, 515, 90).fillAndStroke('#f8fafc', '#e2e8f0');
 
@@ -286,7 +288,7 @@ export const downloadPDF = async (req, res, next) => {
           equipo: 'Filtro Prensa FPA-1500',
           estado: 'CONFORME_LIBERADO_100%',
           fecha: '2025-12-15',
-          hash_sha256: '9f83a21e4b86c75d10a65e771c9b4e5482613d90f23a109867c210d56a31f79b',
+          hash_sha256: dossierIntegrityHash,
           emisor: 'Dewatering Solutions S.A.C. - ISO 9001:2015'
         });
         const qrBuffer = await QRCode.toBuffer(qrPayload, { width: 90, margin: 1 });
@@ -299,7 +301,7 @@ export const downloadPDF = async (req, res, next) => {
       doc.text('Escanee el código QR desde cualquier dispositivo móvil o tablet industrial para verificar en tiempo real la validez del Turnover Package, las actas de liberación y certificados de laboratorio.', 135, sec5Y + 32, { width: 405 });
 
       doc.font('Helvetica-Bold').text('Hash de Integridad SHA-256:', 135, sec5Y + 54);
-      doc.fontSize(6.5).font('Courier').fillColor('#0284c7').text('9f83a21e4b86c75d10a65e771c9b4e5482613d90f23a109867c210d56a31f79b', 135, sec5Y + 64);
+      doc.fontSize(6.5).font('Courier').fillColor('#0284c7').text(dossierIntegrityHash, 135, sec5Y + 64);
       doc.fontSize(6.5).font('Helvetica').fillColor('#64748b').text('Válido para auditorías de cumplimiento minero OSINERGMIN / OEFA / ISO 9001:2015.', 135, sec5Y + 74);
 
       doc.fontSize(7).font('Helvetica').fillColor('#94a3b8').text('Dewatering Solutions S.A.C. — Av. Industrial 123, Lima, Perú | www.dewatering.pe | Central: +51 (1) 710-5000', 40, 755, { align: 'center', width: 515 });
